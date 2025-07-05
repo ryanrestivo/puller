@@ -1,0 +1,39 @@
+name: Run Importer for WECHO Stories
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 18 * * 0,4" # every 5 PM GMT on Sundays and Thursdays
+
+jobs:
+  spacy_job:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Cache Python Packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+        env:
+          PIP_CACHE_DIR: ~/.cache/pip
+
+      - name: Run SpaCy Script
+        env:
+          MY_SECRET_JSON: ${{ secrets.MY_SECRET_JSON }}
+        run: python main.py
