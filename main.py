@@ -69,7 +69,7 @@ def data_process(data, end_story_id):
           story['site'] = data['results'][i]['share_url']
           story['publishDate'] = data['results'][i]['pub_date'].split('T')[0]
           story['story_id'] = data['results'][i]['id']
-          if data['results'][i]['id'] < end_story_id:
+          if data['results'][i]['id'] <= end_story_id:
             print(f"Completes on ID: {data['results'][i]['id']}")
             raise Exception
           story['description'] = data['results'][i]['tease']
