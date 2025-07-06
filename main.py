@@ -82,7 +82,7 @@ def data_process(data, end_story_id):
 def paginate_feed(initial_url):
     url = initial_url
     while url:
-        headers = {'Authorization': token['token'], 'Content-Type': 'application/json'}
+        headers = {'Authorization': token, 'Content-Type': 'application/json'}
         q = requests.get(url, headers=headers)
         q.raise_for_status()
         data = q.json()
