@@ -2,8 +2,8 @@ name: Run Importer for WECHO Stories
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "17 5 * * *" # every day at 5:17 am GMT
+  #schedule:
+  #  - cron: "17 5 * * *" # every day at 5:17 am GMT
 
 jobs:
   spacy_job:
