@@ -14,8 +14,6 @@ if feed_str:
         validation = feed['validation']
         teamID = feed['teamID']
         database = feed['database']
-        print("STASHING VARIABLES")
-        #print(feed)
     except json.JSONDecodeError as e:
         print("Error decoding JSON:", e)
 else:
@@ -52,8 +50,6 @@ def data_process(data, end_story_id):
     if len(data['results'][i]['bylines']) > 0:
       if 'name' in data['results'][i]['bylines'][-1]:
         if ' / ' in data['results'][i]['bylines'][-1]['name']:
-          #print(data['results'][i]['bylines'][-1]['name'])
-          #print("Wire", i )
           pass
         elif 'Associated Press' in data['results'][i]['bylines'][-1]['name']:
           pass
@@ -101,3 +97,4 @@ if __name__ in "__main__":
            data_process(page, end_story_id)
         except Exception as e:
            print(e)
+           continue
