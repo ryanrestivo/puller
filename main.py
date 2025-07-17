@@ -2,7 +2,7 @@ import re
 import json
 import requests
 import os
-
+from datetime import datetime, timedelta
 
 feed_str = os.getenv("MY_SECRET_JSON")  # Get the environment variable (as a string)
 if feed_str:
@@ -45,34 +45,42 @@ def inputDataRequests(database_name, collection_name, data):
         return 'Fail'
 
 def data_process(data, end_story_id):
-  for i in range(0,len(data['results'])):
-    story = {}
-    if len(data['results'][i]['bylines']) > 0:
-      if 'name' in data['results'][i]['bylines'][-1]:
-        if ' / ' in data['results'][i]['bylines'][-1]['name']:
-          pass
-        elif 'Associated Press' in data['results'][i]['bylines'][-1]['name']:
-          pass
-        elif "Chicago Tribune" in data['results'][i]['bylines'][-1]['name']:
-          pass
-        elif "(TNS)" in data['results'][i]['bylines'][-1]['name']:
-          pass
-        elif "The New York Times Editorial Board" in data['results'][i]['bylines'][-1]['name']:
-          pass
-        else:
-          story['author'] = data['results'][i]['bylines'][-1]['name']
-          story['title'] = data['results'][i]['headline']
-          story['site'] = data['results'][i]['share_url']
-          story['publishDate'] = data['results'][i]['pub_date'].split('T')[0]
-          story['story_id'] = data['results'][i]['id']
-          if data['results'][i]['id'] <= end_story_id:
-            print(f"Completes on ID: {data['results'][i]['id']}")
-            raise Exception
-          story['description'] = data['results'][i]['tease']
-          story['text'] = data['results'][i]['story'].strip()
-          data_add = {}
-          data_add['rows'] = [story]
-          inputDataRequests(teamID, database, data_add)
+    fourteen_days_ago = datetime.now() - timedelta(days=14)
+    for i in range(0,len(data['results'])):
+      story = {}
+      if len(data['results'][i]['bylines']) > 0:
+        print(data['results'][i]['bylines'])
+        if 'name' in data['results'][i]['bylines'][-1]:
+          if ' / ' in data['results'][i]['bylines'][-1]['name']:
+            pass
+          elif 'Associated Press' in data['results'][i]['bylines'][-1]['name']:
+            pass
+          elif "Chicago Tribune" in data['results'][i]['bylines'][-1]['name']:
+            pass
+          elif "(TNS)" in data['results'][i]['bylines'][-1]['name']:
+            pass
+          elif "The New York Times Editorial Board" in data['results'][i]['bylines'][-1]['name']:
+            pass
+          else:
+            story['author'] = data['results'][i]['bylines'][-1]['name']
+            story['title'] = data['results'][i]['headline']
+            story['site'] = data['results'][i]['share_url']
+            story['publishDate'] = data['results'][i]['pub_date'].split('T')[0]
+            story['story_id'] = data['results'][i]['id']
+            if data['results'][i]['id'] <= end_story_id:
+              print(f"Completes on ID: {data['results'][i]['id']}")
+              raise Exception
+            story['description'] = data['results'][i]['tease']
+            story['text'] = data['results'][i]['story'].strip()
+            data_add = {}
+            data_add['rows'] = [story]
+            inputDataRequests(teamID, database, data_add)
+            given_date = datetime.strptime(story['publishDate'], '%Y-%m-%d')
+            if given_date < fourteen_days_ago:
+                print(f"Completed on story from {story['publishDate']}")
+                return False
+    return True
+
 
 
 def paginate_feed(initial_url):
@@ -93,8 +101,5 @@ if __name__ in "__main__":
     print(end_story_id)
     initial_url = link
     for page in paginate_feed(initial_url):
-        try:
-           data_process(page, end_story_id)
-        except Exception as e:
-           print(e)
-           continue
+      if not data_process(page, end_story_id):
+          break
