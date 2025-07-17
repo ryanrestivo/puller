@@ -69,7 +69,7 @@ def data_process(data, end_story_id):
             story['story_id'] = data['results'][i]['id']
             if data['results'][i]['id'] <= end_story_id:
               print(f"Completes on ID: {data['results'][i]['id']}")
-              raise Exception
+              return False
             story['description'] = data['results'][i]['tease']
             story['text'] = data['results'][i]['story'].strip()
             data_add = {}
