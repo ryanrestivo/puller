@@ -2,7 +2,7 @@ import re
 import json
 import requests
 import os
-
+from datetime import datetime, timedelta
 
 feed_str = os.getenv("MY_SECRET_JSON")  # Get the environment variable (as a string)
 if feed_str:
@@ -45,6 +45,7 @@ def inputDataRequests(database_name, collection_name, data):
         return 'Fail'
 
 def data_process(data, end_story_id):
+  fourteen_days_ago = datetime.now() - timedelta(days=14)
   for i in range(0,len(data['results'])):
     story = {}
     if len(data['results'][i]['bylines']) > 0:
@@ -73,6 +74,11 @@ def data_process(data, end_story_id):
           data_add = {}
           data_add['rows'] = [story]
           inputDataRequests(teamID, database, data_add)
+          given_date = datetime.strptime(story['publishDate'], '%Y-%m-%d')
+          if given_date < fourteen_days_ago:
+             print(f"Completed on story from {story['publishDate']}")
+             raise Exception
+
 
 
 def paginate_feed(initial_url):
