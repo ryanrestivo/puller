@@ -20,7 +20,6 @@ else:
     print("Environment variable MY_SECRET_JSON is not set.")
 
 
-
 def dataRequestsGet(database_name, collection_name, mongo_query, mongo_query_type, metric=None):
     mongo_query_str = json.dumps(mongo_query)
     z = requests.get(f'{endpoint}',
