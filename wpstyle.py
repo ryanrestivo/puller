@@ -60,10 +60,10 @@ def post_driver(feed, past_stories):
   end_sequence = 0
   total_pages = 10000 // 100 + 1
   name = feed['name']
-  endpoint = feed['website']
+  endpoint_site = feed['website']
   team_id = feed['team_id']
   for page in range(1,total_pages):
-    r = requests.get(f'{endpoint}/wp-json/wp/v2/posts?per_page=100&page={page}') # paginate the feed
+    r = requests.get(f'{endpoint_site}/wp-json/wp/v2/posts?per_page=100&page={page}') # paginate the feed
     data = r.json()
     data_list = []
     for i in range(0,len(data)):
@@ -116,18 +116,18 @@ if __name__ in "__main__":
     feed_string = os.getenv("NEWSROOM_VARIABLE") 
     if feed_string:
         try:
-            endpoint = json.loads(feed_string)  # Convert JSON string to dictionary
-            print(endpoint)
+            endpoint_space = json.loads(feed_string)  # Convert JSON string to dictionary
+            print(endpoint_space)
         except json.JSONDecodeError as e:
             print("Error decoding JSON:", e)
     else:
         print("Environment variable NEWSROOM_VARIABLE is not set.")
-    print(f"Running for {endpoint['name']}")
+    print(f"Running for {endpoint_space['name']}")
     pipeline = [ {"$sort": {"story_id": -1}}, {'$project': {'story_id': 1}}]
-    data_identifiers = dataRequestsGet(endpoint['team_id'], 'storyData', pipeline, "aggregate")
+    data_identifiers = dataRequestsGet(endpoint_space['team_id'], 'storyData', pipeline, "aggregate")
     past_story_ids = [i['story_id'] for i in data_identifiers]
     print(f"{len(past_story_ids)} total stories")
-    post_driver(endpoint, past_story_ids)
+    post_driver(endpoint_space, past_story_ids)
 
 
 
