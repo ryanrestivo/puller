@@ -3,7 +3,7 @@ name: NEWSROOM_THREE
 on:
   workflow_dispatch:
   schedule:
-    - cron: "17 4 * * *" # every day at 4:17 am GMT
+    - cron: "17 5 * * *" # every day at 4:17 am GMT
 
 jobs:
   importer:
@@ -33,7 +33,7 @@ jobs:
         env:
           PIP_CACHE_DIR: ~/.cache/pip
 
-      - name: Run Importer Script
+      - name: Import Newsroom Three
         env:
           MY_SECRET_JSON: ${{ secrets.MY_SECRET_JSON }}
           NEWSROOM_VARIABLE: ${{ secrets.NEWSROOM_THREE }} # NR 1

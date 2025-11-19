@@ -33,7 +33,7 @@ jobs:
         env:
           PIP_CACHE_DIR: ~/.cache/pip
 
-      - name: Run Importer Script
+      - name: Import Newsroom Five
         env:
           MY_SECRET_JSON: ${{ secrets.MY_SECRET_JSON }}
           NEWSROOM_VARIABLE: ${{ secrets.NEWSROOM_FIVE }}
