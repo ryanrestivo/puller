@@ -48,7 +48,7 @@ def data_process(data, end_story_id):
     for i in range(0,len(data['results'])):
       story = {}
       if len(data['results'][i]['bylines']) > 0:
-        print(data['results'][i]['bylines'])
+        #print(data['results'][i]['bylines'])
         if 'name' in data['results'][i]['bylines'][-1]:
           if ' / ' in data['results'][i]['bylines'][-1]['name']:
             pass
