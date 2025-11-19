@@ -3,7 +3,7 @@ name: NEWSROOM_FIVE
 on:
   workflow_dispatch:
   schedule:
-    - cron: "17 4 * * *" # every day at 4:17 am GMT
+    - cron: "17 10 * * *" # every day at 10:17 am GMT
 
 jobs:
   importer:
