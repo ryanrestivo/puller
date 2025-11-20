@@ -37,4 +37,5 @@ jobs:
         env:
           MY_SECRET_JSON: ${{ secrets.MY_SECRET_JSON }}
           NEWSROOM_VARIABLE: ${{ secrets.NEWSROOM_THREE }} # NR 1
+          BACKEND_API: ${{ secrets.BACKEND_API }}
         run: python wpstyle.py
