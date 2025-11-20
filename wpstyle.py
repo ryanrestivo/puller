@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 import json
 import os
 
+service_api = os.getenv("BACKEND_API")
+
 feed_str = os.getenv("MY_SECRET_JSON")  # Get the environment variable (as a string)
 if feed_str:
     try:
@@ -21,7 +23,7 @@ else:
 
 def dataRequestsGet(database_name, collection_name, mongo_query, mongo_query_type, metric=None):
     mongo_query_str = json.dumps(mongo_query)
-    z = requests.get(f'{endpoint}',
+    z = requests.get(f'{service_api}',
                             headers={'Validation': validation, 'Content-Type': 'application/json', 'database_name': database_name, 'collection_name': collection_name, 'mongo_query': mongo_query_str, 'mongo_query_type': mongo_query_type, 'metric': metric})
     if z.status_code == 200:
         data = z.json()
@@ -32,7 +34,7 @@ def dataRequestsGet(database_name, collection_name, mongo_query, mongo_query_typ
         return 'Fail'
 
 def inputDataRequests(database_name, collection_name, data):
-    z = requests.post(f'{endpoint}',
+    z = requests.post(f'{service_api}',
                             headers={'Validation': validation, 'Content-Type': 'application/json', 'database_name': database_name, 'collection_name': collection_name},json=data)
     if z.status_code == 200:
         data = z.json()
