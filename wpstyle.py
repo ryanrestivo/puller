@@ -117,7 +117,7 @@ if __name__ in "__main__":
     if feed_string:
         try:
             endpoint_space = json.loads(feed_string)  # Convert JSON string to dictionary
-            print(endpoint_space)
+            print([a for a in endpoint_space])
         except json.JSONDecodeError as e:
             print("Error decoding JSON:", e)
     else:
@@ -127,7 +127,10 @@ if __name__ in "__main__":
     data_identifiers = dataRequestsGet(endpoint_space['team_id'], 'storyData', pipeline, "aggregate")
     past_story_ids = [i['story_id'] for i in data_identifiers]
     print(f"{len(past_story_ids)} total stories")
-    post_driver(endpoint_space, past_story_ids)
+    try:
+       post_driver(endpoint_space, past_story_ids)
+    except:
+       pass
 
 
 
