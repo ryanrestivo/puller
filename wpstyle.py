@@ -112,6 +112,11 @@ def post_driver(feed, past_stories):
       inputDataRequests(team_id, "storyData", input_data)
 
 
+def past_story_run(team_id):
+    pipeline = [ {"$sort": {"story_id": -1}}, {'$project': {'story_id': 1}}]
+    data_identifiers = dataRequestsGet(team_id, 'storyData', pipeline, "aggregate")
+    past_story_ids = [i['story_id'] for i in data_identifiers]
+    return past_story_ids
 
 
 if __name__ in "__main__":
@@ -125,14 +130,16 @@ if __name__ in "__main__":
     else:
         print("Environment variable NEWSROOM_VARIABLE is not set.")
     print(f"Running for {endpoint_space['name']}")
-    pipeline = [ {"$sort": {"story_id": -1}}, {'$project': {'story_id': 1}}]
-    data_identifiers = dataRequestsGet(endpoint_space['team_id'], 'storyData', pipeline, "aggregate")
-    past_story_ids = [i['story_id'] for i in data_identifiers]
+    past_story_ids = past_story_run(endpoint_space['team_id'])
     print(f"{len(past_story_ids)} total stories")
     try:
        post_driver(endpoint_space, past_story_ids)
     except:
        pass
+    # POST RUN STORY COUNT
+    post_run_ids = past_story_run(endpoint_space['team_id'])
+    print(f"NOW {len(post_run_ids)} total stories")
+
 
 
 
