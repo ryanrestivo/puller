@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 import json
 import os
 
+service_api = os.getenv("BACKEND_API")
+
 feed_str = os.getenv("MY_SECRET_JSON")  # Get the environment variable (as a string)
 if feed_str:
     try:
@@ -21,8 +23,8 @@ else:
 
 def dataRequestsGet(database_name, collection_name, mongo_query, mongo_query_type, metric=None):
     mongo_query_str = json.dumps(mongo_query)
-    z = requests.get(f'{endpoint}',
-                            headers={'Validation': validation, 'Content-Type': 'application/json', 'database_name': database_name, 'collection_name': collection_name, 'mongo_query': mongo_query_str, 'mongo_query_type': mongo_query_type, 'metric': metric})
+    z = requests.get(f'{service_api}',
+                            headers={'Validation': validation, 'Content-Type': 'application/json', 'database-name': database_name, 'collection-name': collection_name, 'mongo-query': mongo_query_str, 'mongo-query-type': mongo_query_type, 'metric': metric})
     if z.status_code == 200:
         data = z.json()
         z.close()
@@ -32,8 +34,8 @@ def dataRequestsGet(database_name, collection_name, mongo_query, mongo_query_typ
         return 'Fail'
 
 def inputDataRequests(database_name, collection_name, data):
-    z = requests.post(f'{endpoint}',
-                            headers={'Validation': validation, 'Content-Type': 'application/json', 'database_name': database_name, 'collection_name': collection_name},json=data)
+    z = requests.post(f'{service_api}',
+                            headers={'Validation': validation, 'Content-Type': 'application/json', 'database-name': database_name, 'collection-name': collection_name},json=data)
     if z.status_code == 200:
         data = z.json()
         z.close()
@@ -110,6 +112,11 @@ def post_driver(feed, past_stories):
       inputDataRequests(team_id, "storyData", input_data)
 
 
+def past_story_run(team_id):
+    pipeline = [ {"$sort": {"story_id": -1}}, {'$project': {'story_id': 1}}]
+    data_identifiers = dataRequestsGet(team_id, 'storyData', pipeline, "aggregate")
+    past_story_ids = [i['story_id'] for i in data_identifiers]
+    return past_story_ids
 
 
 if __name__ in "__main__":
@@ -117,17 +124,22 @@ if __name__ in "__main__":
     if feed_string:
         try:
             endpoint_space = json.loads(feed_string)  # Convert JSON string to dictionary
-            print(endpoint_space)
+            print([a for a in endpoint_space])
         except json.JSONDecodeError as e:
             print("Error decoding JSON:", e)
     else:
         print("Environment variable NEWSROOM_VARIABLE is not set.")
     print(f"Running for {endpoint_space['name']}")
-    pipeline = [ {"$sort": {"story_id": -1}}, {'$project': {'story_id': 1}}]
-    data_identifiers = dataRequestsGet(endpoint_space['team_id'], 'storyData', pipeline, "aggregate")
-    past_story_ids = [i['story_id'] for i in data_identifiers]
+    past_story_ids = past_story_run(endpoint_space['team_id'])
     print(f"{len(past_story_ids)} total stories")
-    post_driver(endpoint_space, past_story_ids)
+    try:
+       post_driver(endpoint_space, past_story_ids)
+    except:
+       pass
+    # POST RUN STORY COUNT
+    post_run_ids = past_story_run(endpoint_space['team_id'])
+    print(f"NOW {len(post_run_ids)} total stories")
+
 
 
 

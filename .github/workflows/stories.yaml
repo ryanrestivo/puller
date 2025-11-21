@@ -36,4 +36,5 @@ jobs:
       - name: Run Importer Script
         env:
           MY_SECRET_JSON: ${{ secrets.MY_SECRET_JSON }}
+          BACKEND_API: ${{ secrets.BACKEND_API }}
         run: python main.py
