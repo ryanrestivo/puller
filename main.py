@@ -5,6 +5,7 @@ import os
 from datetime import datetime, timedelta
 
 service_api = os.getenv("BACKEND_API")
+print(f"service_api == {service_api}")
 if not service_api:
     raise ValueError("service_api not found in .env.  Ensure it's set correctly.")
 
@@ -26,6 +27,7 @@ else:
 
 def dataRequestsGet(database_name, collection_name, mongo_query, mongo_query_type, metric=None):
     mongo_query_str = json.dumps(mongo_query)
+    print(f"Making request to: {service_api}")
     z = requests.get(service_api,
                             headers={'Validation': validation, 'Content-Type': 'application/json', 'database-name': database_name, 'collection-name': collection_name, 'mongo-query': mongo_query_str, 'mongo-query-type': mongo_query_type, 'metric': metric})
     if z.status_code == 200:
@@ -37,6 +39,7 @@ def dataRequestsGet(database_name, collection_name, mongo_query, mongo_query_typ
         return 'Fail'
 
 def inputDataRequests(database_name, collection_name, data):
+    print(f"Making request to: {service_api}")
     z = requests.post(service_api,
                             headers={'Validation': validation, 'Content-Type': 'application/json', 'database-name': database_name, 'collection-name': collection_name},json=data)
     if z.status_code == 200:
