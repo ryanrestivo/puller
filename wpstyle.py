@@ -13,7 +13,7 @@ if feed_str:
         endpoint = feed['endpoint']
         link = feed['link']
         validation = feed['validation']
-        teamID = feed['teamID']
+        #teamID = feed['teamID']
         database = feed['database']
     except json.JSONDecodeError as e:
         print("Error decoding JSON:", e)
