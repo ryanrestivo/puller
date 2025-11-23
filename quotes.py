@@ -7,7 +7,7 @@ import os
 import ast
 import re
 
-
+quote_table = os.getenv("QUOTE_TABLE")
 llm_service = os.getenv("LLM_SERVICE")
 llm_key = os.getenv('LLM_HEADER')
 
@@ -453,7 +453,7 @@ def storyWork(team_id, date_num):
                             a['relationships'] = relationships(b, a)
                         except Exception as e:
                             pass
-                        dataRequestsPUT(team_id,'quotesData', {"person": b}, {'$push':{ "mentions": a}})
+                        dataRequestsPUT(team_id,quote_table, {"person": b}, {'$push':{ "mentions": a}})
         except Exception as e:
             #print(b, e)
             pass
@@ -475,7 +475,7 @@ if __name__ == "__main__":
     print(f"Running for {endpoint_space['name']}")
     endpoint_space['team_id']
 
-    missing_dates = missingDates(endpoint_space['team_id'], 'quotesData')
+    missing_dates = missingDates(endpoint_space['team_id'], "completedDates")
     print(missing_dates)
     for i in missing_dates[2:4]:
       try:

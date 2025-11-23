@@ -59,6 +59,7 @@ jobs:
           REL_SET_ONE: ${{ secrets.REL_SET_ONE }}
           REL_SET_TWO: ${{ secrets.REL_SET_TWO }}
           REL_SET_THREE: ${{ secrets.REL_SET_THREE }}
+          QUOTE_TABLE: ${{ secrets.QUOTE_TABLE }}
         run: |
           python people.py
           python quotes.py

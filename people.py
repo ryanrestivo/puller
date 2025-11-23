@@ -7,6 +7,9 @@ import os
 import ast
 import re
 
+quote_table = os.getenv("QUOTE_TABLE")
+
+
 service_api = os.getenv("BACKEND_API")
 if not service_api:
     raise ValueError("service_api not found in .env.  Ensure it's set correctly.")
@@ -133,7 +136,7 @@ def run_date(teamID, date_str):
               "_id": 0
           }
       }]
-      data_two = dataRequestsGet(teamID, "quotesData", pipeline, "aggregate")
+      data_two = dataRequestsGet(teamID, quote_table, pipeline, "aggregate")
       existing_names = [doc['person'] for doc in data_two]
       existing_set = set(existing_names)
       unique_new_people = [name for name in people_list_full if name not in existing_set]
@@ -141,7 +144,7 @@ def run_date(teamID, date_str):
         print("No people")
       else:
         people_data_listing = [{'person': i} for i in list(set(unique_new_people))]
-        inputDataRequests(teamID, "quotesData", {"rows": people_data_listing})
+        inputDataRequests(teamID, quote_table, {"rows": people_data_listing})
       inputDataRequests(teamID, "completedDates", {"rows": [{"date": date_str}]})
       print(f"{date_str} completed")
     except Exception as e:
