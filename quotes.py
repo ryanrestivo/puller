@@ -140,41 +140,32 @@ def person_in_story(person_name, text):
 
 
 def detect_speaker(sent_text, attribution_verbs, target_person=None):
-    """
-    Detect the speaker using patterns:
-    1. "<name> said"
-    2. "said <name>"
-    3. "said <role>, <name>"
-    """
     text = sent_text
-
-    #attribution_verbs = ["said", "says"]
     verb_group = r'(?:' + '|'.join(attribution_verbs) + r')'
+    name_pattern = r'(\b[\w\-]+(?:\s+[\w\-]+)?)'
+    p1 = rf'{name_pattern}\s+{verb_group}\b'
+    p2 = rf'{verb_group}\s+{name_pattern}'
+    p3 = rf'{verb_group}\s+[^,]+,\s+{name_pattern}'
 
-    # Pattern 1: "<Name> VERB"
-    p1 = rf'(\b[\w\-]+\s+[\w\-]+\b)\s+{verb_group}\b'
+    patterns = [p1, p2, p3]
 
-    # Pattern 2: "VERB <Name>"
-    p2 = rf'{verb_group}\s+(\b[\w\-]+\s+[\w\-]+\b)'
-
-    # Pattern 3: "VERB <role>, <Name>"
-    p3 = rf'{verb_group}\s+[^,]+,\s+(\b[\w\-]+\s+[\w\-]+\b)'
-
-    for pattern in [p1, p2, p3]:
+    for pattern in patterns:
         matches = re.findall(pattern, text, flags=re.IGNORECASE)
         for raw_name in matches:
-            normalized = normalize_name(raw_name)
-
+            detected_norm = normalize_name(raw_name)
+            if not detected_norm:
+                continue
             if not target_person:
-                return normalized
-
-            # Compare normalized target
+                return raw_name.strip()
             target_norm = normalize_name(target_person)
-            if any(part in normalized for part in target_norm.split()):
+            detected_last = detected_norm.split()[-1]
+            target_last = target_norm.split()[-1]
+            if detected_last == target_last:
+                return target_person
+            if detected_norm == target_norm:
                 return target_person
 
     return None
-
 
 def extract_mentions(dataItem, person_name, attribution_verbs):
     title = dataItem.get('title')
