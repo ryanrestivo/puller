@@ -1,9 +1,7 @@
 name: Run NEWSROOM_ONE Quotes
 
 on:
-  workflow_dispatch:
-  #schedule:
-  #  - cron: "17 18 * * *" # every day
+  workflow_dispatch: # or other triggers you need
 
 jobs:
   spacy_job:
@@ -22,7 +20,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('nlp_requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
@@ -34,15 +32,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-spacy-
 
-      - name: Install Dependencies
-        run: |
-          pip install -r nlp_requirements.txt
-
+      # After first run, remove
       - name: Download SpaCy Model
         run: |
           python -m spacy download en_core_web_md
         env:
-          XDG_CACHE_HOME: ~/.cache/spacy
+          XDG_CACHE_HOME: ~/.cache/spacy  # This is technically unnecessary now
 
       - name: Run Script
         env:
