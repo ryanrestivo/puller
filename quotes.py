@@ -480,7 +480,7 @@ if __name__ == "__main__":
         print("Environment variable NEWSROOM_VARIABLE is not set.")
     print(f"Running for {endpoint_space['name']}")
     endpoint_space['team_id']
-    missing_dates = missingDates(endpoint_space['team_id'], "completedDates")
+    missing_dates = missingDates(endpoint_space['team_id'], "quoteDates")
     print(missing_dates)
     for i in missing_dates: #[2:4]:
       try:
