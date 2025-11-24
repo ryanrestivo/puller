@@ -319,11 +319,22 @@ def extract_attributable_quotes(data_item, person_name, attribution_verbs):
 
 
 def missingDates(teamID, table):
-    last_100_days = []
-    current_date = datetime.now()
-    for i in range(2,100):
-        date = current_date - timedelta(days=i)
-        last_100_days.append(date.strftime("%Y-%m-%d"))
+    pipeline = [
+        {
+            '$group': {
+                '_id': '$publishDate',
+                'dates': {'$addToSet': '$publishDate'} # Crucially, use $addToSet
+            }
+        },
+        {
+            '$project': {
+                '_id': 0,
+                'dates': 1
+            }
+        }
+    ]
+    story_dates = dataRequestsGet(teamID, 'storyData', pipeline, "aggregate")
+    all_dates = sorted(list(set([i['dates'][0] for i in story_dates])), reverse=True)
     existing_dates_agg = [
     {
         "$group": {
@@ -342,7 +353,7 @@ def missingDates(teamID, table):
     }]
     existing_dates = dataRequestsGet(teamID, table, existing_dates_agg, "aggregate")
     dates_list = existing_dates[0]['dates']
-    missing_dates = [date for date in last_100_days if date not in dates_list]
+    missing_dates = [date for date in all_dates if date not in dates_list]
     return missing_dates
 
 def produce_expert(person, data):
@@ -432,7 +443,11 @@ def storyWork(team_id, date_num):
           }
       ]
     data = dataRequestsGet(team_id, 'storyData', pipeline, "aggregate")
-    story_data = pd.DataFrame(data)
+    if 'error' in data:
+        print(f"No available data for {date_num}")
+        raise Exception
+    if type(data) == list:
+        story_data = pd.DataFrame(data)
     people_by_day = person_processor(data)
     people_trim = list(set(people_by_day))
     for b in people_trim:
