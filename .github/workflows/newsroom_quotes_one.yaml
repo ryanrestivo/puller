@@ -34,10 +34,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-spacy-
 
-      - name: Install Dependencies
-        run: |
-          pip install -r nlp_requirements.txt
-
       - name: Run Script
         env:
           MY_SECRET_JSON: ${{ secrets.MY_SECRET_JSON }}
