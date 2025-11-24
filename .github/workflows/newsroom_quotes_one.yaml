@@ -18,26 +18,35 @@ jobs:
         with:
           python-version: "3.9"
 
-      - name: Cache Python Packages
+      # Cache the virtual environment
+      - name: Cache venv
+        id: cache-venv
         uses: actions/cache@v3
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('nlp_requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('nlp_requirements.txt') }}-${{ hashFiles('spacy_model.txt') }}
 
-      - name: Cache SpaCy Model
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/spacy
-          key: ${{ runner.os }}-spacy-${{ hashFiles('spacy_model.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-spacy-
+      # Create venv and install deps if cache miss
+      - name: Create venv if missing
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install -r nlp_requirements.txt
+          # Install the spacy model listed inside spacy_model.txt
+          python - <<EOF
+          import subprocess
+          import pathlib
 
-      - name: Run Script
+          model = pathlib.Path("spacy_model.txt").read_text().strip()
+          subprocess.run(["python", "-m", "spacy", "download", model], check=True)
+          EOF
+
+      - name: Run People & Quotes Scripts
         env:
           MY_SECRET_JSON: ${{ secrets.MY_SECRET_JSON }}
-          NEWSROOM_VARIABLE: ${{ secrets.NEWSROOM_ONE }} # NR 1
+          NEWSROOM_VARIABLE: ${{ secrets.NEWSROOM_ONE }}
           BACKEND_API: ${{ secrets.BACKEND_API }}
           LLM_SERVICE: ${{ secrets.LLM_SERVICE }}
           LLM_HEADER: ${{ secrets.LLM_HEADER }}
@@ -51,5 +60,6 @@ jobs:
           REL_SET_THREE: ${{ secrets.REL_SET_THREE }}
           QUOTE_TABLE: ${{ secrets.QUOTE_TABLE }}
         run: |
+          source .venv/bin/activate
           python people.py
           python quotes.py
