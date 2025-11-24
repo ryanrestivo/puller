@@ -410,7 +410,7 @@ def relationships(person, data):
             readout = flex_llm_point({'training': f'{os.getenv("RELATIONSHIP_RULE_ONE")} {person} {os.getenv("RELATIONSHIP_RULE_TWO")}', 
                                         'rule': f'{os.getenv("REL_SET_ONE")} {person} {os.getenv("REL_SET_TWO")} {person} {os.getenv("REL_SET_THREE")} ', 
                                         'text': text})
-            print(readout)
+            #print(readout)
             try:
                 expertise = ast.literal_eval(readout['choices'][-1]['message']['content'])
             except Exception:
