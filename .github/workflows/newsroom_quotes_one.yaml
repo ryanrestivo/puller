@@ -32,6 +32,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-spacy-
 
+      - name: Install Dependencies
+        run: |
+          pip install -r nlp_requirements.txt
+
       # After first run, remove
       - name: Download SpaCy Model
         run: |
