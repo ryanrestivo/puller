@@ -1,7 +1,9 @@
-name: Run NEWSROOM_ONE Quotes
+name: Run NEWSROOM_ONE People & Quotes
 
 on:
-  workflow_dispatch: # or other triggers you need
+  workflow_dispatch:
+  schedule:
+    - cron: "17 10 * * *" # every day at 10:17 am GMT
 
 jobs:
   spacy_job:
@@ -35,13 +37,6 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install -r nlp_requirements.txt
-
-      # After first run, remove
-      - name: Download SpaCy Model
-        run: |
-          python -m spacy download en_core_web_md
-        env:
-          XDG_CACHE_HOME: ~/.cache/spacy  # This is technically unnecessary now
 
       - name: Run Script
         env:
