@@ -61,5 +61,4 @@ jobs:
           QUOTE_TABLE: ${{ secrets.QUOTE_TABLE }}
         run: |
           source .venv/bin/activate
-          python people.py
           python quotes.py
