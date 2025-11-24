@@ -1,4 +1,4 @@
-name: Run NEWSROOM_ONE People & Quotes
+name: Run NEWSROOM_TWO People & Quotes
 
 on:
   workflow_dispatch:
@@ -46,7 +46,7 @@ jobs:
       - name: Run People & Quotes Scripts
         env:
           MY_SECRET_JSON: ${{ secrets.MY_SECRET_JSON }}
-          NEWSROOM_VARIABLE: ${{ secrets.NEWSROOM_ONE }}
+          NEWSROOM_VARIABLE: ${{ secrets.NEWSROOM_TWO }}
           BACKEND_API: ${{ secrets.BACKEND_API }}
           LLM_SERVICE: ${{ secrets.LLM_SERVICE }}
           LLM_HEADER: ${{ secrets.LLM_HEADER }}

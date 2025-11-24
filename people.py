@@ -69,11 +69,22 @@ def person_processor(data):
 
 def missingDates(teamID, table):
     # table: "completedDates"
-    last_100_days = []
-    current_date = datetime.now()
-    for i in range(2, 10000):
-        date = current_date - timedelta(days=i)
-        last_100_days.append(date.strftime("%Y-%m-%d"))
+    pipeline = [
+        {
+            '$group': {
+                '_id': '$publishDate',
+                'dates': {'$addToSet': '$publishDate'} # Crucially, use $addToSet
+            }
+        },
+        {
+            '$project': {
+                '_id': 0,
+                'dates': 1
+            }
+        }
+    ]
+    story_dates = dataRequestsGet(teamID, 'storyData', pipeline, "aggregate")
+    all_dates = sorted(list(set([i['dates'][0] for i in story_dates])), reverse=True)
     existing_dates_agg = [
     {
         "$group": {
@@ -97,7 +108,7 @@ def missingDates(teamID, table):
     }]
     existing_dates = dataRequestsGet(teamID, table, existing_dates_agg, "aggregate")
     existing_dates_list = [doc['dates'] for doc in existing_dates][0]
-    missing_dates = [date for date in last_100_days if date not in existing_dates_list]
+    missing_dates = [date for date in all_dates if date not in existing_dates_list]
     return missing_dates
 
 def run_date(teamID, date_str):
