@@ -449,7 +449,7 @@ def storyWork(team_id, date_num):
     if type(data) == list:
         story_data = pd.DataFrame(data)
     try:
-        story_vectors(data)
+        story_vectors(data, team_id, date_num)
     except:
         pass
     people_by_day = person_processor(data)
