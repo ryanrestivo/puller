@@ -3,7 +3,7 @@ name: Run NEWSROOM_ONE People & Quotes
 on:
   workflow_dispatch:
   schedule:
-    - cron: "52 0/4 * * *" # every 4th hour 0-23 52 minutes past
+    - cron: "17,49 0/1 * * *"
 
 jobs:
   spacy_job:
