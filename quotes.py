@@ -498,6 +498,7 @@ if __name__ == "__main__":
     for i in missing_dates[1:2]:
       try:
           print(f"Running {i}")
+          dataRequestsPUT(endpoint_space['team_id'],'quoteDates', {"date": i}, {'$set':{"inProgress": True}})
           storyWork(endpoint_space['team_id'], i)
       except Exception as e:
           print(f"Error on {i}: {e}")
