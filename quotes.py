@@ -308,6 +308,15 @@ def extract_attributable_quotes(data_item, person_name, attribution_verbs):
 
     return person_quotes
 
+def create_embeddings(nlp, text):
+    doc = nlp(text)
+    return doc.vector
+
+def story_vectors(data, team_id, date_num):
+  for a in range(0,len(data)):
+    text_embeddings = create_embeddings(nlp, data[a]['paragraphText'])
+    dataRequestsPUT(team_id, 'storyData', {"site": data[a]['site']}, {'$set':{"embeddings": [float(i) for i in text_embeddings] }})
+  dataRequestsPUT(team_id, 'quoteDates', {'date': date_num}, {'$set': {'vectors': True}})
 
 def missingDates(teamID, table):
     pipeline = [
@@ -439,6 +448,10 @@ def storyWork(team_id, date_num):
         raise Exception
     if type(data) == list:
         story_data = pd.DataFrame(data)
+    try:
+        story_vectors(data)
+    except:
+        pass
     people_by_day = person_processor(data)
     people_trim = list(set(people_by_day))
     for b in people_trim:
