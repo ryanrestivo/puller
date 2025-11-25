@@ -140,41 +140,32 @@ def person_in_story(person_name, text):
 
 
 def detect_speaker(sent_text, attribution_verbs, target_person=None):
-    """
-    Detect the speaker using patterns:
-    1. "<name> said"
-    2. "said <name>"
-    3. "said <role>, <name>"
-    """
     text = sent_text
-
-    #attribution_verbs = ["said", "says"]
     verb_group = r'(?:' + '|'.join(attribution_verbs) + r')'
+    name_pattern = r'(\b[\w\-]+(?:\s+[\w\-]+)?)'
+    p1 = rf'{name_pattern}\s+{verb_group}\b'
+    p2 = rf'{verb_group}\s+{name_pattern}'
+    p3 = rf'{verb_group}\s+[^,]+,\s+{name_pattern}'
 
-    # Pattern 1: "<Name> VERB"
-    p1 = rf'(\b[\w\-]+\s+[\w\-]+\b)\s+{verb_group}\b'
+    patterns = [p1, p2, p3]
 
-    # Pattern 2: "VERB <Name>"
-    p2 = rf'{verb_group}\s+(\b[\w\-]+\s+[\w\-]+\b)'
-
-    # Pattern 3: "VERB <role>, <Name>"
-    p3 = rf'{verb_group}\s+[^,]+,\s+(\b[\w\-]+\s+[\w\-]+\b)'
-
-    for pattern in [p1, p2, p3]:
+    for pattern in patterns:
         matches = re.findall(pattern, text, flags=re.IGNORECASE)
         for raw_name in matches:
-            normalized = normalize_name(raw_name)
-
+            detected_norm = normalize_name(raw_name)
+            if not detected_norm:
+                continue
             if not target_person:
-                return normalized
-
-            # Compare normalized target
+                return raw_name.strip()
             target_norm = normalize_name(target_person)
-            if any(part in normalized for part in target_norm.split()):
+            detected_last = detected_norm.split()[-1]
+            target_last = target_norm.split()[-1]
+            if detected_last == target_last:
+                return target_person
+            if detected_norm == target_norm:
                 return target_person
 
     return None
-
 
 def extract_mentions(dataItem, person_name, attribution_verbs):
     title = dataItem.get('title')
@@ -317,6 +308,15 @@ def extract_attributable_quotes(data_item, person_name, attribution_verbs):
 
     return person_quotes
 
+def create_embeddings(nlp, text):
+    doc = nlp(text)
+    return doc.vector
+
+def story_vectors(data, team_id, date_num):
+  for a in range(0,len(data)):
+    text_embeddings = create_embeddings(nlp, data[a]['paragraphText'])
+    dataRequestsPUT(team_id, 'storyData', {"site": data[a]['site']}, {'$set':{"embeddings": [float(i) for i in text_embeddings] }})
+  dataRequestsPUT(team_id, 'quoteDates', {'date': date_num}, {'$set': {'vectors': True}})
 
 def missingDates(teamID, table):
     pipeline = [
@@ -410,7 +410,7 @@ def relationships(person, data):
             readout = flex_llm_point({'training': f'{os.getenv("RELATIONSHIP_RULE_ONE")} {person} {os.getenv("RELATIONSHIP_RULE_TWO")}', 
                                         'rule': f'{os.getenv("REL_SET_ONE")} {person} {os.getenv("REL_SET_TWO")} {person} {os.getenv("REL_SET_THREE")} ', 
                                         'text': text})
-            print(readout)
+            #print(readout)
             try:
                 expertise = ast.literal_eval(readout['choices'][-1]['message']['content'])
             except Exception:
@@ -448,6 +448,10 @@ def storyWork(team_id, date_num):
         raise Exception
     if type(data) == list:
         story_data = pd.DataFrame(data)
+    try:
+        story_vectors(data, team_id, date_num)
+    except:
+        pass
     people_by_day = person_processor(data)
     people_trim = list(set(people_by_day))
     for b in people_trim:
@@ -491,7 +495,7 @@ if __name__ == "__main__":
     endpoint_space['team_id']
     missing_dates = missingDates(endpoint_space['team_id'], "quoteDates")
     print(missing_dates)
-    for i in missing_dates[2:4]:
+    for i in missing_dates[1:2]:
       try:
           print(f"Running {i}")
           storyWork(endpoint_space['team_id'], i)
