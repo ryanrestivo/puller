@@ -482,7 +482,7 @@ if __name__ == "__main__":
     endpoint_space['team_id']
     missing_dates = missingDates(endpoint_space['team_id'], "quoteDates")
     print(missing_dates)
-    for i in missing_dates[1:3]:
+    for i in missing_dates[1:2]:
       try:
           print(f"Running {i}")
           storyWork(endpoint_space['team_id'], i)
