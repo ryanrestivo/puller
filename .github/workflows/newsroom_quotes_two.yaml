@@ -3,7 +3,7 @@ name: Run NEWSROOM_TWO People & Quotes
 on:
   workflow_dispatch:
   schedule:
-    - cron: "7 0/1 * * *"
+    - cron: "7 * * * *"
 
 jobs:
   spacy_job:
