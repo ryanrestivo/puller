@@ -2,8 +2,8 @@ name: Run NEWSROOM_TWO People & Quotes
 
 on:
   workflow_dispatch:
-  #schedule:
-  #  - cron: "17 10 * * *" # every day at 10:17 am GMT
+  schedule:
+    - cron: "15 0/4 * * *" # every 4th hour 0-23 15 minutes past
 
 jobs:
   spacy_job:
