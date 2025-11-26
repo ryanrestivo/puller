@@ -103,7 +103,7 @@ def extract_person_data(data, person_name):
 
 def extract_quote(text, attribution_verbs):
     quotes = []
-    balanced = re.findall(r'["“](.+?)["”]', text, flags=re.DOTALL)
+    balanced = re.findall(r'[“"](.*?)[”"]', text, flags=re.DOTALL)
     for q in balanced:
         q = q.strip()
         if q and q not in quotes:
@@ -118,7 +118,6 @@ def extract_quote(text, attribution_verbs):
             quotes.append(q)
 
     return quotes
-
 
 def normalize_name(name):
     return re.sub(r'[^\w\s]', '', name.lower()).strip()
