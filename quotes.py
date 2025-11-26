@@ -94,10 +94,8 @@ def person_processor(data):
   return people_list
 
 def extract_person_data(data, person_name):
-  # take the JSON response from REQUEST to turn into data
   data = pd.DataFrame(data)
   data['paragraphText'] = data['paragraphText'].fillna('')
-  # Filter by the person we want
   mask = data['paragraphText'].str.contains(person_name)
   result = data[mask]
   return result
