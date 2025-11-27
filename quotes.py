@@ -94,43 +94,32 @@ def person_processor(data):
   return people_list
 
 def extract_person_data(data, person_name):
-  # take the JSON response from REQUEST to turn into data
   data = pd.DataFrame(data)
   data['paragraphText'] = data['paragraphText'].fillna('')
-  # Filter by the person we want
   mask = data['paragraphText'].str.contains(person_name)
   result = data[mask]
   return result
 
 
 def extract_quote(text, attribution_verbs):
-    """
-    Extract quoted text, handling balanced and unbalanced quotes without duplicates.
-    """
     quotes = []
-
-    # Grab all balanced quotes first
-    balanced = re.findall(r'["“](.+?)["”]', text, flags=re.DOTALL)
+    balanced = re.findall(r'[“"](.*?)[”"]', text, flags=re.DOTALL)
     for q in balanced:
         q = q.strip()
         if q and q not in quotes:
             quotes.append(q)
 
-    # Grab unbalanced quotes anywhere
     verb_group = r'(?:' + '|'.join(attribution_verbs) + r')'
     pattern = r'["“](.+?)(?=(?:\s+' + verb_group + r'|\s$|\n))'
     unbalanced = re.findall(pattern, text, flags=re.IGNORECASE | re.DOTALL)
     for q in unbalanced:
         q = q.strip()
-        # only add if not a substring of any existing quote
         if q and not any(q in existing or existing in q for existing in quotes):
             quotes.append(q)
 
     return quotes
 
-
 def normalize_name(name):
-    """Normalize names for safe comparison (lowercase, strip punctuation)."""
     return re.sub(r'[^\w\s]', '', name.lower()).strip()
 
 def person_in_story(person_name, text):
@@ -201,26 +190,19 @@ def extract_mentions(dataItem, person_name, attribution_verbs):
 
             mention['fullNameMentioned'] = person_in_story(person_name, text)
 
-            # extend mention context like before
             next_sent = ""
             for j in range(i+1, len(sentences)):
-              # always extend if the next sentence begins another quote
               if '"' in sentences[j].text or '“' in sentences[j].text:
                   next_sent += " " + sentences[j].text
               else:
                   break
             mention["mention"] += next_sent
 
-            # --- BUILD FULL QUOTE BLOCK (fix for multi-sentence quotes) ---
             quote_source = sent.text
-
-            # Look forward for additional quoted sentences
             j = i + 1
             while j < len(sentences) and ('"' in sentences[j].text or '“' in sentences[j].text):
                 quote_source += " " + sentences[j].text
                 j += 1
-
-            # Look backward (in case the quote started earlier than this sentence)
             k = i - 1
             while k >= 0 and ('"' in sentences[k].text or '“' in sentences[k].text):
                 quote_source = sentences[k].text + " " + quote_source
@@ -229,8 +211,6 @@ def extract_mentions(dataItem, person_name, attribution_verbs):
             quotes = extract_quote(quote_source, attribution_verbs)
             quote_data = ' '.join(quotes) if quotes else None
             mention['quotes'] = quote_data
-
-            # detect speaker from the narrowed text
             mention['speaker'] = detect_speaker(quote_source, attribution_verbs, person_name) if quote_data else None
 
             person_mentions.append(mention)
@@ -261,24 +241,17 @@ def extract_attributable_quotes(data_item, person_name, attribution_verbs):
         quotes_in_sent = extract_quote(sent_text, attribution_verbs)
         if not quotes_in_sent:
             continue
-
-        # Look for speaker attribution immediately after quote
         for quote in quotes_in_sent:
-            # Pattern: quote followed by something like: "Wamp said" or "John Wamp says"
             pattern = rf'{re.escape(quote)}["”]?\s*,?\s*(\w+\s*\w*)\s+(?:said|says)\b'
             match = re.search(pattern, sent_text, flags=re.IGNORECASE)
             if match:
                 speaker_raw = match.group(1)
                 speaker_norm = normalize_name(speaker_raw)
-                # Check if speaker matches target person (first or last name)
                 if not (person_first in speaker_norm or person_last in speaker_norm):
-                    continue  # skip quote if speaker is not the target person
+                    continue  
             else:
-                continue  # no clear speaker attribution
-
-            # Build quote block by looking at consecutive sentences if needed
+                continue 
             quote_block = quote
-            # Optional: extend to next sentences if they continue with quotes
             idx = sentences.index(sent)
             j = idx + 1
             while j < len(sentences):
@@ -494,7 +467,7 @@ if __name__ == "__main__":
     print(f"Running for {endpoint_space['name']}")
     endpoint_space['team_id']
     missing_dates = missingDates(endpoint_space['team_id'], "quoteDates")
-    print(missing_dates)
+    #print(missing_dates)
     for i in missing_dates[1:2]:
       try:
           print(f"Running {i}")
