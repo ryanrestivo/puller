@@ -468,7 +468,7 @@ if __name__ == "__main__":
     endpoint_space['team_id']
     missing_dates = missingDates(endpoint_space['team_id'], "quoteDates")
     #print(missing_dates)
-    for i in missing_dates[1:2]:
+    for i in missing_dates[0:2]:
       try:
           print(f"Running {i}")
           dataRequestsPUT(endpoint_space['team_id'],'quoteDates', {"date": i}, {'$set':{"inProgress": True}})
