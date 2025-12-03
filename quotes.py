@@ -213,6 +213,12 @@ def extract_mentions(dataItem, person_name, attribution_verbs):
             mention['quotes'] = quote_data
             mention['speaker'] = detect_speaker(quote_source, attribution_verbs, person_name) if quote_data else None
 
+            mention['mentionsEmbeddings'] = create_embeddings(nlp, mention['mention'])
+            if mention['quotes']:
+                mention['quotesEmbeddings'] = create_embeddings(nlp, mention['quotes'])
+            else:
+                mention['quotesEmbeddings'] = None
+
             person_mentions.append(mention)
 
     return person_mentions
