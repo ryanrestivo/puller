@@ -445,11 +445,19 @@ def storyWork(team_id, date_num):
                             a['relationships'] = relationships(b, a)
                         except Exception as e:
                             pass
+                        try:
+                            mention_embeddings = create_embeddings(nlp, a['mention'])
+                            a['mentionsEmbeddings'] = [float(i) for i in mention_embeddings]
+                            if a['quotes']:
+                                quote_embeddings = create_embeddings(nlp, a['quotes'])
+                                a['quotesEmbeddings'] = [float(i) for i in quote_embeddings]
+                        except Exception:
+                            pass
                         dataRequestsPUT(team_id,quote_table, {"person": b}, {'$push':{ "mentions": a}})
         except Exception as e:
             #print(b, e)
             pass
-    dataRequestsPUT(team_id,'quoteDates', {"date": date_num}, {'$set':{"totalPeople": len(people_trim), "complete": True}})
+    dataRequestsPUT(team_id,'quoteDates', {"date": date_num}, {'$set':{"totalPeople": len(people_trim), "complete": True, "quotevectors": True}})
 
 
 
