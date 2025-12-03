@@ -446,11 +446,11 @@ def storyWork(team_id, date_num):
                         except Exception as e:
                             pass
                         try:
-                            a['mentionsEmbeddings'] = create_embeddings(nlp, a['mention'])
-                            print(a['mentionsEmbeddings'])
+                            mention_embeddings = create_embeddings(nlp, a['mention'])
+                            a['mentionsEmbeddings'] = [float(i) for i in mention_embeddings]
                             if a['quotes']:
-                                a['quotesEmbeddings'] = create_embeddings(nlp, a['quotes'])
-                                print(a['quotesEmbeddings'])
+                                quote_embeddings = create_embeddings(nlp, a['quotes'])
+                                a['quotesEmbeddings'] = [float(i) for i in quote_embeddings]
                         except Exception:
                             pass
                         dataRequestsPUT(team_id,quote_table, {"person": b}, {'$push':{ "mentions": a}})
