@@ -455,7 +455,7 @@ def storyWork(team_id, date_num):
         except Exception as e:
             #print(b, e)
             pass
-    dataRequestsPUT(team_id,'quoteDates', {"date": date_num}, {'$set':{"totalPeople": len(people_trim), "complete": True}})
+    dataRequestsPUT(team_id,'quoteDates', {"date": date_num}, {'$set':{"totalPeople": len(people_trim), "complete": True, "quotevectors": True}})
 
 
 
