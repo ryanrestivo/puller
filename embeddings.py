@@ -11,8 +11,6 @@ import re
 
 quote_dates = os.getenv('DATES_ENDPOINT')
 quote_table = os.getenv("QUOTE_TABLE")
-llm_service = os.getenv("LLM_SERVICE")
-llm_key = os.getenv('LLM_HEADER')
 
 service_api = os.getenv("BACKEND_API")
 if not service_api:
