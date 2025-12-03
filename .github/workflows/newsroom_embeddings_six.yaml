@@ -1,4 +1,4 @@
-name: Run NEWSROOM_FIVE Embeddings
+name: Run NEWSROOM_SIX Embeddings
 
 on:
   workflow_dispatch:
