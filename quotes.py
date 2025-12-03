@@ -213,12 +213,6 @@ def extract_mentions(dataItem, person_name, attribution_verbs):
             mention['quotes'] = quote_data
             mention['speaker'] = detect_speaker(quote_source, attribution_verbs, person_name) if quote_data else None
 
-            mention['mentionsEmbeddings'] = create_embeddings(nlp, mention['mention'])
-            if mention['quotes']:
-                mention['quotesEmbeddings'] = create_embeddings(nlp, mention['quotes'])
-            else:
-                mention['quotesEmbeddings'] = None
-
             person_mentions.append(mention)
 
     return person_mentions
@@ -450,6 +444,14 @@ def storyWork(team_id, date_num):
                         try:
                             a['relationships'] = relationships(b, a)
                         except Exception as e:
+                            pass
+                        try:
+                            a['mentionsEmbeddings'] = create_embeddings(nlp, a['mention'])
+                            print(a['mentionsEmbeddings'])
+                            if a['quotes']:
+                                a['quotesEmbeddings'] = create_embeddings(nlp, a['quotes'])
+                                print(a['quotesEmbeddings'])
+                        except Exception:
                             pass
                         dataRequestsPUT(team_id,quote_table, {"person": b}, {'$push':{ "mentions": a}})
         except Exception as e:
