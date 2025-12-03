@@ -179,5 +179,5 @@ if __name__ in "__main__":
             print("Error decoding JSON:", e)
     else:
         print("Environment variable NEWSROOM_VARIABLE is not set.")
-    print(f"Running for {endpoint_space['name']}")
-    past_story_ids = scaling_vector_data(endpoint_space['team_id'])
+    print(f"Running {endpoint_space['team_id']}")
+    scaling_vector_data(endpoint_space['team_id'])
