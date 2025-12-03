@@ -129,7 +129,7 @@ def scaling_vector_data(team_id):
         ]
   data = dataRequestsGet(team_id, quote_dates, pipeline, "aggregate")
   dates_list = [i['date'] for i in data]
-  dates_list_run = dates_list[:5] # test with 5 to confirm works
+  dates_list_run = dates_list[1:2] # shorter test len
   for date_num in dates_list_run: 
     try:
       pipeline_two = [
