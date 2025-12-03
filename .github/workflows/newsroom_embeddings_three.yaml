@@ -1,0 +1,55 @@
+name: Run NEWSROOM_THREE Embeddings
+
+on:
+  workflow_dispatch:
+  #schedule:
+  #  - cron: "19 6 * * *"
+
+jobs:
+  spacy_job:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      # Cache the virtual environment
+      - name: Cache venv
+        id: cache-venv
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('nlp_requirements.txt') }}-${{ hashFiles('spacy_model.txt') }}
+
+      # Create venv and install deps if cache miss
+      - name: Create venv if missing
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install -r nlp_requirements.txt
+          # Install the spacy model listed inside spacy_model.txt
+          python - <<EOF
+          import subprocess
+          import pathlib
+
+          model = pathlib.Path("spacy_model.txt").read_text().strip()
+          subprocess.run(["python", "-m", "spacy", "download", model], check=True)
+          EOF
+
+      - name: Run Embeddings for NEWSROOM_THREE
+        env:
+          MY_SECRET_JSON: ${{ secrets.MY_SECRET_JSON }}
+          NEWSROOM_VARIABLE: ${{ secrets.NEWSROOM_THREE }}
+          BACKEND_API: ${{ secrets.BACKEND_API }}
+          QUOTE_TABLE: ${{ secrets.QUOTE_TABLE }}
+          DATES_ENDPOINT: ${{ secrets.DATES_ENDPOINT }}
+        run: |
+          source .venv/bin/activate
+          python embeddings.py
