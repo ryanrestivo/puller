@@ -234,7 +234,7 @@ def people_run_through(team_id, people_list, limit=None):
             if alt_bio:
                 bio_data['biography'] = alt_bio # alt_bio becomes bio
             
-            if bio_data['total_data'] > 10: # extreme threshold to start
+            if bio_data['total_data'] > 1: # extreme threshold to start
                 # if you have a lot, assume you're famous
                 merged_bio = wiki_search(person, bio_data['biography'])
                 if merged_bio:
