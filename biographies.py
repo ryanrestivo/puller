@@ -238,6 +238,8 @@ def people_run_through(team_id, people_list, limit=None):
                 # if you have a lot, assume you're famous
                 merged_bio = wiki_search(person, bio_data['biography'])
                 if merged_bio:
+                    bio_data['quotes_bio'] = bio_data['biography'] # stash the older version
+                    # this bio supercedes now...
                     bio_data['biography'] = merged_bio
             dataRequestsPUT(team_id,'quotesData', {'person': person}, { "$set": bio_data })
         except Exception as e:
