@@ -263,8 +263,8 @@ def wiki_search(person, biography):
         return None
 
 def merge_bio_create(person, biography, merging_bio):
-    readout_two = flex_llm_point({'training': f'Here is authoritative infomration about the source {person}. Create a python dict of items. Create a value "biography" as one long string that does not exceed 3000 characters. Use all of the information given to write your best approximation on who {person} is. DO NOT RETURN ANYTHING OTHER THAN THE DICT. ',
-                                      'rule': f'Here is the biography formed by the data we have.\n\n {biography}. Use the data from the authoritative source to mix with the data we have to create a more robust biography, one that could exceed 3000 characters. Here is the new information to add to the biography: ',
+    readout_two = flex_llm_point({'training': f'Here is authoritative infomration about the source {person}. Create a python dict of items. Create a value "biography" as one long string that does not exceed 5000 characters. Use all of the information given to write your best approximation on who {person} is. DO NOT RETURN ANYTHING OTHER THAN THE DICT. ',
+                                      'rule': f'Here is our biography: {biography}\n\n Use the data from the source to mix with the data we have to create a more robust biography, one that should not exceed 5000 characters. Make sure to include our data in with the new data. Here is the new information to add to the biography: ',
                                       'text': merging_bio})
     try:
       llm_data = ast.literal_eval(readout_two['choices'][-1]['message']['content'])
