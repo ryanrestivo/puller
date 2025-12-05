@@ -311,6 +311,12 @@ if __name__ in "__main__":
     people_list = find_bio_less(team_id)
     people_list_for_updating = find_update_people(team_id)
     if len(people_list_for_updating) > 0:
-        people_run_through(endpoint_space['team_id'], people_list_for_updating)
+        try:
+            people_run_through(endpoint_space['team_id'], people_list_for_updating)
+        except Exception as e:
+            print(f"Error run through updating is {e}")
     ### start with 100 to test
-    people_run_through(endpoint_space['team_id'], people_list, 100)
+    try:
+        people_run_through(endpoint_space['team_id'], people_list, 100)
+    except Exception as e:
+        print(f"Error run is {e}")
