@@ -2,8 +2,8 @@ name: Biographies for NEWSROOM_TWO
 
 on:
   workflow_dispatch:
-  #schedule:
-  #  - cron: "17 7 * * *" # every day at 7:17 am GMT
+  schedule:
+    - cron: "17 14 * * *"
 
 jobs:
   importer:
