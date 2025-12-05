@@ -284,7 +284,7 @@ def merge_bio_create(person, biography, merging_bio):
               llm_data = {}
     keys_to_check = ['biography']
     if all(key in llm_data for key in keys_to_check):
-        #print("All required keys are present.")
+        #print("All required keys are present.") 
         return llm_data['biography']
     else:
         #print("Not all required keys are present.")
