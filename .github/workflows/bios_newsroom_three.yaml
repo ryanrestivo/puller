@@ -1,4 +1,4 @@
-name: Biographies for NEWSROOM_FIVE
+name: Biographies for NEWSROOM_THREE
 
 on:
   workflow_dispatch:
@@ -33,10 +33,10 @@ jobs:
         env:
           PIP_CACHE_DIR: ~/.cache/pip
 
-      - name: Bios Newsroom Five
+      - name: Bios Newsroom Three
         env:
           MY_SECRET_JSON: ${{ secrets.MY_SECRET_JSON }}
-          NEWSROOM_VARIABLE: ${{ secrets.NEWSROOM_FIVE }}
+          NEWSROOM_VARIABLE: ${{ secrets.NEWSROOM_THREE }}
           QUOTE_TABLE: ${{ secrets.QUOTE_TABLE }}
           DATES_ENDPOINT: ${{ secrets.DATES_ENDPOINT }}
           LLM_SERVICE: ${{ secrets.LLM_SERVICE }}

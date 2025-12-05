@@ -234,10 +234,12 @@ def people_run_through(team_id, people_list, limit=None):
             if alt_bio:
                 bio_data['biography'] = alt_bio # alt_bio becomes bio
             
-            if bio_data['total_data'] > 10: # extreme threshold to start
+            if bio_data['total_data'] > 1: # extreme threshold to start
                 # if you have a lot, assume you're famous
                 merged_bio = wiki_search(person, bio_data['biography'])
                 if merged_bio:
+                    bio_data['quotes_bio'] = bio_data['biography'] # stash the older version
+                    # this bio supercedes now...
                     bio_data['biography'] = merged_bio
             dataRequestsPUT(team_id,'quotesData', {'person': person}, { "$set": bio_data })
         except Exception as e:
@@ -250,21 +252,24 @@ def people_run_through(team_id, people_list, limit=None):
 
 def wiki_search(person, biography):
     data = {}
-    wiki_data = searching_person(person)
-    logical_bio_compare = comparison(person, biography, wiki_data['exact_match']['extract'])
-    if logical_bio_compare == True:
-        # PUSH BIO DATA
-        data['wikipedia'] = wiki_data
-        data['updatedDate'] = datetime.now().strftime('%Y-%m-%d')
-        dataRequestsPUT(team_id,'quotesData', {'person': person}, { "$set": data })
-        updated_biography = merge_bio_create(person, biography, wiki_data['exact_match']['extract'])
-        return updated_biography
-    else:
+    try:
+        wiki_data = searching_person(person)
+        logical_bio_compare = comparison(person, biography, wiki_data['exact_match']['extract'])
+        if logical_bio_compare == True:
+            # PUSH BIO DATA
+            data['wikipedia'] = wiki_data
+            data['updatedDate'] = datetime.now().strftime('%Y-%m-%d')
+            dataRequestsPUT(team_id,'quotesData', {'person': person}, { "$set": data })
+            updated_biography = merge_bio_create(person, biography, wiki_data['exact_match']['extract'])
+            return updated_biography
+        else:
+            return None
+    except:
         return None
 
 def merge_bio_create(person, biography, merging_bio):
-    readout_two = flex_llm_point({'training': f'Here is authoritative infomration about the source {person}. Create a python dict of items. Create a value "biography" as one long string that does not exceed 3000 characters. Use all of the information given to write your best approximation on who {person} is. DO NOT RETURN ANYTHING OTHER THAN THE DICT. ',
-                                      'rule': f'Here is the biography formed by the data we have.\n\n {biography}. Use the data from the authoritative source to mix with the data we have to create a more robust biography, one that could exceed 3000 characters. Here is the new information to add to the biography: ',
+    readout_two = flex_llm_point({'training': f'Here is authoritative infomration about the source {person}. Create a python dict of items. Create a value "biography" as one long string that does not exceed 2500 characters. Use all of the information given to write your best approximation on who {person} is. DO NOT RETURN ANYTHING OTHER THAN THE DICT. ',
+                                      'rule': f'Here is our biography: {biography}\n\n Use the data from the source to mix with the data we have to create a more robust biography, one that should not exceed 2500 characters. Make sure to include our data in with the new data. Here is the new information to add to the biography: ',
                                       'text': merging_bio})
     try:
       llm_data = ast.literal_eval(readout_two['choices'][-1]['message']['content'])
@@ -279,10 +284,10 @@ def merge_bio_create(person, biography, merging_bio):
               llm_data = {}
     keys_to_check = ['biography']
     if all(key in llm_data for key in keys_to_check):
-        print("All required keys are present.")
+        #print("All required keys are present.") 
         return llm_data['biography']
     else:
-        print("Not all required keys are present.")
+        #print("Not all required keys are present.")
         return None
   
 
@@ -306,6 +311,12 @@ if __name__ in "__main__":
     people_list = find_bio_less(team_id)
     people_list_for_updating = find_update_people(team_id)
     if len(people_list_for_updating) > 0:
-        people_run_through(endpoint_space['team_id'], people_list_for_updating)
+        try:
+            people_run_through(endpoint_space['team_id'], people_list_for_updating)
+        except Exception as e:
+            print(f"Error run through updating is {e}")
     ### start with 100 to test
-    people_run_through(endpoint_space['team_id'], people_list, 100)
+    try:
+        people_run_through(endpoint_space['team_id'], people_list, 100)
+    except Exception as e:
+        print(f"Error run is {e}")
