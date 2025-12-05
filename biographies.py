@@ -96,8 +96,9 @@ def find_bio_less(team_id):
         }
     }]
     top_people = dataRequestsGet(team_id, quote_table, pipeline, "aggregate")
-    update_people = [i['person'] for i in top_people]
-    return update_people # the list of names
+    if 'error' in top_people:
+        return [] # no people
+    return [i['person'] for i in top_people] if 'error' not in top_people else []
 
 
 def find_update_people(team_id):
