@@ -455,7 +455,6 @@ def storyWork(team_id, date_num):
                         except Exception:
                             pass
                         dataRequestsPUT(team_id,quote_table, {"person": b}, {'$push':{ "mentions": a}})
-                        print(b)
         except Exception as e:
             #print(b, e)
             pass

@@ -163,7 +163,7 @@ def bio_creator(team_id, person):
   # CHECK KEYS WE NEED TO HAVE 
   keys_to_check = ['biography', 'role', 'organization']
   if all(key in llm_data for key in keys_to_check):
-      print("All required keys are present.")
+      pass
   else:
       raise Exception
   llm_data['model'] = readout['model']
