@@ -427,6 +427,7 @@ def storyWork(team_id, date_num):
         pass
     people_by_day = person_processor(data)
     people_trim = list(set(people_by_day))
+    print(people_trim)
     for b in people_trim:
         try:
             #print(b)
@@ -454,6 +455,7 @@ def storyWork(team_id, date_num):
                         except Exception:
                             pass
                         dataRequestsPUT(team_id,quote_table, {"person": b}, {'$push':{ "mentions": a}})
+                        print(b)
         except Exception as e:
             #print(b, e)
             pass
