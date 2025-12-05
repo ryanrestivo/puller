@@ -252,16 +252,19 @@ def people_run_through(team_id, people_list, limit=None):
 
 def wiki_search(person, biography):
     data = {}
-    wiki_data = searching_person(person)
-    logical_bio_compare = comparison(person, biography, wiki_data['exact_match']['extract'])
-    if logical_bio_compare == True:
-        # PUSH BIO DATA
-        data['wikipedia'] = wiki_data
-        data['updatedDate'] = datetime.now().strftime('%Y-%m-%d')
-        dataRequestsPUT(team_id,'quotesData', {'person': person}, { "$set": data })
-        updated_biography = merge_bio_create(person, biography, wiki_data['exact_match']['extract'])
-        return updated_biography
-    else:
+    try:
+        wiki_data = searching_person(person)
+        logical_bio_compare = comparison(person, biography, wiki_data['exact_match']['extract'])
+        if logical_bio_compare == True:
+            # PUSH BIO DATA
+            data['wikipedia'] = wiki_data
+            data['updatedDate'] = datetime.now().strftime('%Y-%m-%d')
+            dataRequestsPUT(team_id,'quotesData', {'person': person}, { "$set": data })
+            updated_biography = merge_bio_create(person, biography, wiki_data['exact_match']['extract'])
+            return updated_biography
+        else:
+            return None
+    except:
         return None
 
 def merge_bio_create(person, biography, merging_bio):
