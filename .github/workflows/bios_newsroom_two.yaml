@@ -1,0 +1,46 @@
+name: Biographies for NEWSROOM_TWO
+
+on:
+  workflow_dispatch:
+  #schedule:
+  #  - cron: "17 7 * * *" # every day at 7:17 am GMT
+
+jobs:
+  importer:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the Repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Cache Python Packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Dependencies or take from Cache
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests bs4
+        env:
+          PIP_CACHE_DIR: ~/.cache/pip
+
+      - name: Import Newsroom One
+        env:
+          MY_SECRET_JSON: ${{ secrets.MY_SECRET_JSON }}
+          NEWSROOM_VARIABLE: ${{ secrets.NEWSROOM_TWO }}
+          QUOTE_TABLE: ${{ secrets.QUOTE_TABLE }}
+          DATES_ENDPOINT: ${{ secrets.DATES_ENDPOINT }}
+          LLM_SERVICE: ${{ secrets.LLM_SERVICE }}
+          LLM_HEADER: ${{ secrets.LLM_HEADER }}
+          BACKEND_API: ${{ secrets.BACKEND_API }}
+          WK_DATA: ${{ secrets.WK_DATA }}
+        run: python biographies.py
