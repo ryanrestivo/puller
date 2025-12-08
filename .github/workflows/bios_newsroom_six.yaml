@@ -3,7 +3,7 @@ name: Biographies for NEWSROOM_SIX
 on:
   workflow_dispatch:
   #schedule:
-  #  - cron: "17 7 * * *" # every day at 7:17 am GMT
+  #  - cron: "17 7 * * *" # every day at 7:17 am GMT 
 
 jobs:
   importer:
