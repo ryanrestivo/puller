@@ -421,10 +421,10 @@ def storyWork(team_id, date_num):
         raise Exception
     if type(data) == list:
         story_data = pd.DataFrame(data)
-    try:
-        story_vectors(data, team_id, date_num)
-    except:
-        pass
+    #try:
+    #    story_vectors(data, team_id, date_num)
+    #except:
+    #    pass
     people_by_day = person_processor(data)
     people_trim = list(set(people_by_day))
     print(people_trim)
