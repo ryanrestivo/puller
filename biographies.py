@@ -80,6 +80,7 @@ def find_bio_less(team_id):
             'mentions.mention': {'$exists': True},
             'mentions.quotes': {'$exists': True},
             'biography': {'$exists': False},
+            'isPerson': {'$eq': True},
             #'mentions.speaker': {'$ne': None}, 
             'mentions.fullNameMentioned': {'$eq': True},
         }
@@ -242,7 +243,7 @@ def people_run_through(team_id, people_list, limit=None):
                     bio_data['quotes_bio'] = bio_data['biography'] # stash the older version
                     # this bio supercedes now...
                     bio_data['biography'] = merged_bio
-            dataRequestsPUT(team_id,'quotesData', {'person': person}, { "$set": bio_data })
+            dataRequestsPUT(team_id,quote_table, {'person': person}, { "$set": bio_data })
         except Exception as e:
             print(f"ERROR: {person}: {e}")
             pass
@@ -260,7 +261,7 @@ def wiki_search(person, biography):
             # PUSH BIO DATA
             data['wikipedia'] = wiki_data
             data['updatedDate'] = datetime.now().strftime('%Y-%m-%d')
-            dataRequestsPUT(team_id,'quotesData', {'person': person}, { "$set": data })
+            dataRequestsPUT(team_id,quote_table, {'person': person}, { "$set": data })
             updated_biography = merge_bio_create(person, biography, wiki_data['exact_match']['extract'])
             return updated_biography
         else:

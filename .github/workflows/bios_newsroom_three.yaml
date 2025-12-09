@@ -43,4 +43,6 @@ jobs:
           LLM_HEADER: ${{ secrets.LLM_HEADER }}
           BACKEND_API: ${{ secrets.BACKEND_API }}
           WK_DATA: ${{ secrets.WK_DATA }}
+          SHOT_ENDPOINT: ${{ secrets.SHOT_ENDPOINT }}
+          SHOT_ENDPOINT_SECRET: ${{ secrets.SHOT_ENDPOINT_SECRET }}
         run: python biographies.py
