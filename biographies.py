@@ -80,7 +80,8 @@ def find_bio_less(team_id):
             'mentions.mention': {'$exists': True},
             'mentions.quotes': {'$exists': True},
             'biography': {'$exists': False},
-            'mentions.speaker': {'$ne': None}, 
+            'isPerson': {'$eq': True},
+            #'mentions.speaker': {'$ne': None}, 
             'mentions.fullNameMentioned': {'$eq': True},
         }
     },
@@ -118,6 +119,63 @@ def find_update_people(team_id):
     top_people = dataRequestsGet(team_id, quote_table, pipeline, "aggregate")
     return [i['person'] for i in top_people] if 'error' not in top_people else [] # list of people names
 
+def bio_update_needed(team_id):
+    pipeline = [
+    {
+        '$match': {
+            'mentions': {
+                '$ne': None
+            },
+            'updatedDate': {
+                '$ne': None
+            }
+        }
+    }, {
+        '$unwind': {
+            'path': '$mentions',
+            'preserveNullAndEmptyArrays': True
+        }
+    }, {
+        '$group': {
+            '_id': '$person',
+            'mostRecentPublishDate': {
+                '$max': '$mentions.publishDate'
+            },
+            'updatedDate': {
+                '$max': '$updatedDate'
+            },
+            'count': {
+                '$sum': 1
+            }
+        }
+    }, {
+        '$project': {
+            '_id': 0,
+            'person': '$_id',
+            'mostRecentPublishDate': 1,
+            'updatedDate': 1,
+            'isMoreRecent': {
+                '$cond': {
+                    'if': {
+                        '$gt': [
+                            '$mostRecentPublishDate', [
+                                '$updatedDate'
+                            ]
+                        ]
+                    },
+                    'then': True,
+                    'else': False
+                }
+            }
+        }
+    }, {
+        '$match': {
+            'isMoreRecent': True
+        }
+    }]
+    top_people = dataRequestsGet(team_id, quote_table, pipeline, "aggregate")
+    print(top_people)
+    return [i['person'] for i in top_people] if 'error' not in top_people else []
 
 
 def bio_creator(team_id, person):
@@ -242,7 +300,7 @@ def people_run_through(team_id, people_list, limit=None):
                     bio_data['quotes_bio'] = bio_data['biography'] # stash the older version
                     # this bio supercedes now...
                     bio_data['biography'] = merged_bio
-            dataRequestsPUT(team_id,'quotesData', {'person': person}, { "$set": bio_data })
+            dataRequestsPUT(team_id,quote_table, {'person': person}, { "$set": bio_data })
         except Exception as e:
             print(f"ERROR: {person}: {e}")
             pass
@@ -260,7 +318,7 @@ def wiki_search(person, biography):
             # PUSH BIO DATA
             data['wikipedia'] = wiki_data
             data['updatedDate'] = datetime.now().strftime('%Y-%m-%d')
-            dataRequestsPUT(team_id,'quotesData', {'person': person}, { "$set": data })
+            dataRequestsPUT(team_id,quote_table, {'person': person}, { "$set": data })
             updated_biography = merge_bio_create(person, biography, wiki_data['exact_match']['extract'])
             return updated_biography
         else:
@@ -313,11 +371,16 @@ if __name__ in "__main__":
     people_list_for_updating = find_update_people(team_id)
     if len(people_list_for_updating) > 0:
         try:
-            people_run_through(endpoint_space['team_id'], people_list_for_updating)
+            people_run_through(team_id, people_list_for_updating)
         except Exception as e:
             print(f"Error run through updating is {e}")
     ### start with 100 to test
     try:
-        people_run_through(endpoint_space['team_id'], people_list, 100)
+        people_run_through(team_id, people_list, 100)
     except Exception as e:
         print(f"Error run is {e}")
+    try:
+        people_listing = bio_update_needed(team_id)
+        people_run_through(team_id, people_list, 100)
+    except Exception as e:
+        print(f"Updating run failed {e}")
