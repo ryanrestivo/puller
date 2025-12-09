@@ -80,7 +80,7 @@ def find_bio_less(team_id):
             'mentions.mention': {'$exists': True},
             'mentions.quotes': {'$exists': True},
             'biography': {'$exists': False},
-            'mentions.speaker': {'$ne': None}, 
+            #'mentions.speaker': {'$ne': None}, 
             'mentions.fullNameMentioned': {'$eq': True},
         }
     },
