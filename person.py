@@ -49,10 +49,7 @@ def dataRequestsPUT(database_name, collection_name, mongo_query_str, update_task
         z.close()
         return data
 
-# SHOT_ENDPOINT: ${{ secrets.SHOT_ENDPOINT }}
 llm_data_endpoint = os.getenv('SHOT_ENDPOINT')
-
-# SHOT_ENDPOINT: ${{ secrets.SHOT_ENDPOINT }}
 llm_data_endpoint_secret = os.getenv('SHOT_ENDPOINT_SECRET')
 
 
