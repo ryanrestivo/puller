@@ -1,0 +1,66 @@
+name: Run NEWSROOM_SIX People & Quotes
+
+on:
+  workflow_dispatch:
+  #schedule:
+  #  - cron: "*/29 * * * *" 
+
+jobs:
+  spacy_job:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      # Cache the virtual environment
+      - name: Cache venv
+        id: cache-venv
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('nlp_requirements.txt') }}-${{ hashFiles('spacy_model.txt') }}
+
+      # Create venv and install deps if cache miss
+      - name: Create venv if missing
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install -r nlp_requirements.txt
+          # Install the spacy model listed inside spacy_model.txt
+          python - <<EOF
+          import subprocess
+          import pathlib
+
+          model = pathlib.Path("spacy_model.txt").read_text().strip()
+          subprocess.run(["python", "-m", "spacy", "download", model], check=True)
+          EOF
+
+      - name: Run People & Quotes Scripts
+        env:
+          MY_SECRET_JSON: ${{ secrets.MY_SECRET_JSON }}
+          NEWSROOM_VARIABLE: ${{ secrets.NEWSROOM_SIX }}
+          BACKEND_API: ${{ secrets.BACKEND_API }}
+          LLM_SERVICE: ${{ secrets.LLM_SERVICE }}
+          LLM_HEADER: ${{ secrets.LLM_HEADER }}
+          EXPERT_TRAIN: ${{ secrets.EXPERT_TRAIN }}
+          EXPERT_RULE_ONE: ${{ secrets.EXPERT_RULE_ONE }}
+          EXPERT_RULE_TWO: ${{ secrets.EXPERT_RULE_TWO }}
+          RELATIONSHIP_RULE_ONE: ${{ secrets.RELATIONSHIP_RULE_ONE }}
+          RELATIONSHIP_RULE_TWO: ${{ secrets.RELATIONSHIP_RULE_TWO }}
+          REL_SET_ONE: ${{ secrets.REL_SET_ONE }}
+          REL_SET_TWO: ${{ secrets.REL_SET_TWO }}
+          REL_SET_THREE: ${{ secrets.REL_SET_THREE }}
+          QUOTE_TABLE: ${{ secrets.QUOTE_TABLE }}
+          SHOT_ENDPOINT: ${{ secrets.SHOT_ENDPOINT }}
+          SHOT_ENDPOINT_SECRET: ${{ secrets.SHOT_ENDPOINT_SECRET }}
+        run: |
+          source .venv/bin/activate
+          python quotes.py
