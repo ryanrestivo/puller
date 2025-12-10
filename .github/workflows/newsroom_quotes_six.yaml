@@ -1,9 +1,9 @@
-name: Run NEWSROOM_FIVE People & Quotes
+name: Run NEWSROOM_SIX People & Quotes
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "*/5 * * * *" 
+  #schedule:
+  #  - cron: "*/29 * * * *" 
 
 jobs:
   spacy_job:
@@ -46,7 +46,7 @@ jobs:
       - name: Run People & Quotes Scripts
         env:
           MY_SECRET_JSON: ${{ secrets.MY_SECRET_JSON }}
-          NEWSROOM_VARIABLE: ${{ secrets.NEWSROOM_FIVE }}
+          NEWSROOM_VARIABLE: ${{ secrets.NEWSROOM_SIX }}
           BACKEND_API: ${{ secrets.BACKEND_API }}
           LLM_SERVICE: ${{ secrets.LLM_SERVICE }}
           LLM_HEADER: ${{ secrets.LLM_HEADER }}

@@ -66,6 +66,21 @@ def dataRequestsPUT(database_name, collection_name, mongo_query_str, update_task
         return data
 
 
+llm_data_endpoint = os.getenv('SHOT_ENDPOINT')
+llm_data_endpoint_secret = os.getenv('SHOT_ENDPOINT_SECRET')
+
+
+def shot_taker(data):
+    data['process'] = llm_data_endpoint_secret
+    r = requests.post(url=llm_data_endpoint, headers={"Validation": llm_key, 'Content-Type': 'application/json'}, json=data)
+    if r.status_code == 200:
+        return_data = r.json()
+        r.close()
+    else:
+        return_data = r.json()
+        r.close()
+    return return_data
+
 
 def flex_llm_point(data):
     r = requests.post(llm_service, headers={"Validation": llm_key, 'Content-Type': 'application/json'}, json=data)
@@ -343,7 +358,7 @@ def produce_expert(person, data):
     for a in mentions_removed_dupes:
       text = a
       try:
-          readout = flex_llm_point({'training': f'{os.getenv("EXPERT_TRAIN")}', 
+          readout = shot_taker({'training': f'{os.getenv("EXPERT_TRAIN")}', 
                                     'rule': f'{os.getenv("EXPERT_RULE_ONE")} {person} {os.getenv("EXPERT_RULE_TWO")} ', 
                                     'text': text})
           try:
@@ -380,7 +395,7 @@ def relationships(person, data):
     for a in mentions_removed_dupes:
         text = a
         try:
-            readout = flex_llm_point({'training': f'{os.getenv("RELATIONSHIP_RULE_ONE")} {person} {os.getenv("RELATIONSHIP_RULE_TWO")}', 
+            readout = shot_taker({'training': f'{os.getenv("RELATIONSHIP_RULE_ONE")} {person} {os.getenv("RELATIONSHIP_RULE_TWO")}', 
                                         'rule': f'{os.getenv("REL_SET_ONE")} {person} {os.getenv("REL_SET_TWO")} {person} {os.getenv("REL_SET_THREE")} ', 
                                         'text': text})
             #print(readout)
