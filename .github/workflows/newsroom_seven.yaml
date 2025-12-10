@@ -2,8 +2,8 @@ name: NEWSROOM_SEVEN
 
 on:
   workflow_dispatch:
-  #schedule:
-  #  - cron: "17 5 * * *" # every day at 4:17 am GMT
+  schedule:
+    - cron: "12 4 * * *"
 
 jobs:
   importer:
