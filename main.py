@@ -74,7 +74,7 @@ def data_process(data, end_story_id):
               print(f"Completes on ID: {data['results'][i]['id']}")
               return False
             story['description'] = data['results'][i]['tease']
-            story['text'] = data['results'][i]['story'].strip()
+            story['paragraphText'] = data['results'][i]['story'].strip()
             data_add = {}
             data_add['rows'] = [story]
             inputDataRequests(teamID, database, data_add)
