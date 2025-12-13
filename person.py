@@ -114,6 +114,7 @@ if __name__ in "__main__":
         }
     }]
     top_people = dataRequestsGet(team_id, quote_table, pipeline, "aggregate")
+    print(top_people)
     person_list = [i['person'] for i in top_people] if 'error' not in top_people else []
     for person in person_list:
         bio_data = {}
