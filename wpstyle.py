@@ -55,6 +55,19 @@ def story_checker(story_id, past_stories):
   if story_id in past_stories:
     raise Exception
 
+def links_author_get(link):
+    z = requests.get(link)
+    story_feed = z.json()
+    if 'author' in story_feed['_links']:
+        if 'href' in story_feed['_links']['author'][-1]:
+            q = requests.get(story_feed['_links']['author'][-1]['href'])
+            feed = q.json()
+            if 'name' in feed:
+                return feed['name']
+            else:
+                return None
+    else:
+      return None
 
 ### THE CUSTOM SCRIPT TO BRING IN STORIES
 
@@ -79,10 +92,16 @@ def post_driver(feed, past_stories):
         data_dict['publishDate'] = data[i]['date_gmt'].split('T')[0]
         data_dict['story_id'] = data[i]['id']
         if 'yoast_head_json' in data[i]:
-            data_dict['author'] = data[i]['yoast_head_json']['author']
-        else:
+           data_dict['author'] = data[i]['yoast_head_json']['author']
+        elif 'coauthors' in data[i]:
            # others use coauthors
            data_dict['author'] = data[i]['coauthors'][-1]['display_name']
+        elif '_links' in data[i]:
+           # some have neither but _links is useful resource to find the author name
+           if 'self' in data[i]['_links']:
+              data_dict['author']  = links_author_get(data[i]['_links'][-1]['href'])
+        else:
+           data_dict['author'] = None
         try:
           data_dict['schemaData'] = data[i]['yoast_head_json']['schema']
         except:
