@@ -6,6 +6,12 @@ import pandas as pd
 import os
 import ast
 import re
+from langdetect import detect
+
+def detection(text):
+  detected_language = detect(text)
+  return detected_language
+
 
 quote_table = os.getenv("QUOTE_TABLE")
 llm_service = os.getenv("LLM_SERVICE")
@@ -102,10 +108,14 @@ def entsTracking(doc):
 def person_processor(data):
   people_list = []
   for i in range(0,len(data)):
-    doc = nlp(data[i]['paragraphText'])
-    ent_data = entsTracking(doc)
-    people = [doc['PERSON'] for doc in ent_data if 'PERSON' in doc and len(doc['PERSON']) > 3 and len(doc['PERSON'].split()) > 1 and doc['PERSON'] is not data[i]['author']]
-    people_list.extend(people)
+    lang = detection(data[i]['paragraphText'])
+    if lang == 'es':
+        continue # remove spanish stories from the data
+    else:
+        doc = nlp(data[i]['paragraphText'])
+        ent_data = entsTracking(doc)
+        people = [doc['PERSON'] for doc in ent_data if 'PERSON' in doc and len(doc['PERSON']) > 3 and len(doc['PERSON'].split()) > 1 and doc['PERSON'] is not data[i]['author']]
+        people_list.extend(people)
   return people_list
 
 def extract_person_data(data, person_name):
