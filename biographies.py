@@ -72,6 +72,21 @@ def flex_llm_point(data):
     return return_data
 
 
+llm_data_endpoint = os.getenv('SHOT_ENDPOINT')
+llm_data_endpoint_secret = os.getenv('SHOT_ENDPOINT_SECRET')
+
+
+def shot_taker(data):
+    data['process'] = llm_data_endpoint_secret
+    r = requests.post(url=llm_data_endpoint, headers={"Validation": llm_key, 'Content-Type': 'application/json'}, json=data)
+    if r.status_code == 200:
+        return_data = r.json()
+        r.close()
+    else:
+        return_data = r.json()
+        r.close()
+    return return_data
+
 
 
 def find_bio_less(team_id):
@@ -205,7 +220,7 @@ def bio_creator(team_id, person):
     item_text = ' '.join(list(set([i['mention'] for i in data])))
     item_total = len([i['mention'] for i in data]) 
   ### RUN DATA THROUGH LLM ENDPOINT
-  readout = flex_llm_point({'training': f'Base all of what you know about this source from the text. You must be certain when using this information. Create a python dict of items. Create a value "biography" as one long string that does not exceed 1500 characters, create a "role" and "organization" if applicable. Use all of the information given to write your best approximation on who {person} is from the quotes they have said. Be as specific on who they are from their quotes. Use from what they said and how they are mentioned to create a biography of them like this is a solid source to write the bio. DO NOT RETURN ANYTHING OTHER THAN THE DICT. If an item is repeated verbatim, assume that the text is duplicated.',
+  readout = shot_taker({'training': f'Base all of what you know about this source from the text. You must be certain when using this information. Create a python dict of items. Create a value "biography" as one long string that does not exceed 1500 characters, create a "role" and "organization" if applicable. Use all of the information given to write your best approximation on who {person} is from the quotes they have said. Be as specific on who they are from their quotes. Use from what they said and how they are mentioned to create a biography of them like this is a solid source to write the bio. DO NOT RETURN ANYTHING OTHER THAN THE DICT. If an item is repeated verbatim, assume that the text is duplicated.',
                                         'rule': f'Here is the mention of the text to use: ',
                                         'text': item_text})
   try:
@@ -257,7 +272,7 @@ def manual_information(team_id, person, biography):
   if len(other_text) == 0:
     return None
   else:
-    readout_two = flex_llm_point({'training': f'You are about to be given complimentary information about the source {person} gathered by the staff of the paper. Create a python dict of items. Create a value "biography" as one long string that does not exceed 2000 characters. Use all of the information given to write your best approximation on who {person} is. DO NOT RETURN ANYTHING OTHER THAN THE DICT. ',
+    readout_two = shot_taker({'training': f'You are about to be given complimentary information about the source {person} gathered by the staff of the paper. Create a python dict of items. Create a value "biography" as one long string that does not exceed 2000 characters. Use all of the information given to write your best approximation on who {person} is. DO NOT RETURN ANYTHING OTHER THAN THE DICT. ',
                                       'rule': f'Here is the text from the staff of the paper.\n\n {other_text}. Use this data that is known about the source to rewrite this biography of the source and add more detail where necessary. Keep as much as possible, but add details where necessary. Here is the current biography to edit: ',
                                       'text': biography})
     try:
@@ -327,7 +342,7 @@ def wiki_search(person, biography):
         return None
 
 def merge_bio_create(person, biography, merging_bio):
-    readout_two = flex_llm_point({'training': f'Here is authoritative infomration about the source {person}. Create a python dict of items. Create a value "biography" as one long string that does not exceed 2500 characters. Use all of the information given to write your best approximation on who {person} is. DO NOT RETURN ANYTHING OTHER THAN THE DICT. ',
+    readout_two = shot_taker({'training': f'Here is authoritative infomration about the source {person}. Create a python dict of items. Create a value "biography" as one long string that does not exceed 2500 characters. Use all of the information given to write your best approximation on who {person} is. DO NOT RETURN ANYTHING OTHER THAN THE DICT. ',
                                       'rule': f'Here is our biography: {biography}\n\n Use the data from the source to mix with the data we have to create a more robust biography, one that should not exceed 2500 characters. Make sure to include our data in with the new data. Here is the new information to add to the biography: ',
                                       'text': merging_bio})
     try:
@@ -351,7 +366,7 @@ def merge_bio_create(person, biography, merging_bio):
   
 
 def comparison(person, text1, text2):
-    comparison_readout = flex_llm_point({'training': f'You are evaluating two biographies for {person}. You are reading them to understand if they are similar in nature or if they diverge and are not talking about the same person.',
+    comparison_readout = shot_taker({'training': f'You are evaluating two biographies for {person}. You are reading them to understand if they are similar in nature or if they diverge and are not talking about the same person.',
                                   'rule': f'All you need to do is return boolean True or False. If the two biographies are matching the same person, return True, if they are not return False. ONLY RETURN THE BOOLEAN TRUE or FALSE. Here is the text to evaluate: ',
                                   'text': f'Here are the two texts to evaluate\n\n TEXT1: {text1}\n\nTEXT2: {text2}'})
     return bool(comparison_readout['choices'][-1]['message']['content'])
