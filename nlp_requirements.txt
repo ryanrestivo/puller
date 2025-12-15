@@ -1,3 +1,5 @@
 pandas
 spacy
 requests
+spacy-langdetect
+langdetect
