@@ -99,7 +99,7 @@ def post_driver(feed, past_stories):
         elif '_links' in data[i]:
            # some have neither but _links is useful resource to find the author name
            if 'self' in data[i]['_links']:
-              data_dict['author']  = links_author_get(data[i]['_links'][-1]['href'])
+              data_dict['author']  = links_author_get(data[i]['_links']['self'][0]['href'])
         else:
            data_dict['author'] = None
         try:
