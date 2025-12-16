@@ -3,7 +3,7 @@ name: Biographies for NEWSROOM_NINE
 on:
   workflow_dispatch:
   schedule:
-    - cron: "29 12 * * *" 
+    - cron: "12 22 * * *" 
 
 jobs:
   importer:
