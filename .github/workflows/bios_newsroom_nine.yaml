@@ -1,9 +1,9 @@
-name: NEWSROOM_NINE
+name: Biographies for NEWSROOM_NINE
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "21 3 * * *"
+    - cron: "12 22 * * *" 
 
 jobs:
   importer:
@@ -33,9 +33,18 @@ jobs:
         env:
           PIP_CACHE_DIR: ~/.cache/pip
 
-      - name: Import Newsroom Nine
+      - name: Bios Newsroom Nine
         env:
           MY_SECRET_JSON: ${{ secrets.MY_SECRET_JSON }}
           NEWSROOM_VARIABLE: ${{ secrets.NEWSROOM_NINE }}
+          QUOTE_TABLE: ${{ secrets.QUOTE_TABLE }}
+          DATES_ENDPOINT: ${{ secrets.DATES_ENDPOINT }}
+          LLM_SERVICE: ${{ secrets.LLM_SERVICE }}
+          LLM_HEADER: ${{ secrets.LLM_HEADER }}
           BACKEND_API: ${{ secrets.BACKEND_API }}
-        run: python wpstyle.py
+          WK_DATA: ${{ secrets.WK_DATA }}
+          SHOT_ENDPOINT: ${{ secrets.SHOT_ENDPOINT }}
+          SHOT_ENDPOINT_SECRET: ${{ secrets.SHOT_ENDPOINT_SECRET }}
+        run: |
+          python person.py
+          python biographies.py

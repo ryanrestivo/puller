@@ -134,6 +134,64 @@ def find_update_people(team_id):
     top_people = dataRequestsGet(team_id, quote_table, pipeline, "aggregate")
     return [i['person'] for i in top_people] if 'error' not in top_people else [] # list of people names
 
+def find_people_to_update(team_id):
+    pipeline = [
+    {
+        '$match': {
+            'mentions': {
+                '$ne': None
+            },
+            'updatedDate': {
+                '$ne': None
+            },
+            'biography': {
+                '$exists': True
+            }
+        }
+    }, {
+        '$unwind': {
+            'path': '$mentions',
+            'preserveNullAndEmptyArrays': True
+        }
+    }, {
+        '$group': {
+            '_id': '$person',
+            'mostRecentPublishDate': {
+                '$max': '$mentions.publishDate'
+            },
+            'updatedDate': {
+                '$max': '$updatedDate'
+            },
+            'count': {
+                '$sum': 1
+            }
+        }
+    }, {
+        '$project': {
+            '_id': 0,
+            'person': '$_id',
+            'mostRecentPublishDate': 1,
+            'updatedDate': 1,
+            'isMoreRecent': {
+                '$cond': {
+                    'if': {
+                        '$gt': [
+                            '$mostRecentPublishDate', [
+                                '$updatedDate'
+                            ]
+                        ]
+                    },
+                    'then': True,
+                    'else': False
+                }
+            }
+        }
+    }]
+    people_aggregation = dataRequestsGet(team_id, "quotesData", pipeline, "aggregate")
+    return [i['person'] for i in people_aggregation if i['isMoreRecent'] == True] if 'error' not in people_aggregation else []
+
+
+
 def bio_update_needed(team_id):
     pipeline = [
     {
@@ -397,5 +455,11 @@ if __name__ in "__main__":
     try:
         people_listing = bio_update_needed(team_id)
         people_run_through(team_id, people_list, 100)
+    except Exception as e:
+        print(f"Updating run failed {e}")
+    try: 
+        date_updates = find_people_to_update(team_id)
+        if len(date_updates) > 0:
+            people_run_through(team_id, date_updates)
     except Exception as e:
         print(f"Updating run failed {e}")
