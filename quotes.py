@@ -98,7 +98,38 @@ def flex_llm_point(data):
         r.close()
     return return_data
 
-
+def isperson_logic(person, team_id):
+  pipeline = [
+    {
+        '$match': {
+            'isPerson': {
+                '$exists': True
+            }, 
+            'isPerson': {
+                '$eq': True
+            }, 
+            'person': {
+                '$eq': person
+            }
+        }
+    }, {
+        '$project': {
+            '_id': 0, 
+            'isPerson': 1
+        }
+    }]
+  results = dataRequestsGet(team_id, 'quotesData', pipeline, "aggregate")
+  if 'error' in results:
+    pass # means it doesnt exist, which is OK
+  elif 'isPerson' in results[-1]:
+    if results[-1]['isPerson'] == True:
+      pass
+    else:
+      print(results[-1]['isPerson'])
+      raise Exception
+  else:
+      pass
+    
 # NLP WORK
 nlp = spacy.load("en_core_web_md")
 
@@ -456,6 +487,7 @@ def storyWork(team_id, date_num):
     for b in people_trim:
         try:
             #print(b)
+            isperson_logic(b, team_id)
             person_result = extract_person_data(story_data,b)
             person_data_list = []
             for i in range(0,len(person_result)):
