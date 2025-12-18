@@ -104,10 +104,7 @@ def isperson_logic(person, team_id):
         '$match': {
             'isPerson': {
                 '$exists': True
-            }, 
-            'isPerson': {
-                '$eq': True
-            }, 
+            },
             'person': {
                 '$eq': person
             }
