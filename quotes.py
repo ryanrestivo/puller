@@ -115,7 +115,7 @@ def isperson_logic(person, team_id):
             'isPerson': 1
         }
     }]
-  results = dataRequestsGet(team_id, 'quotesData', pipeline, "aggregate")
+  results = dataRequestsGet(team_id, quote_table, pipeline, "aggregate")
   if 'error' in results:
     pass # means it doesnt exist, which is OK
   elif 'isPerson' in results[-1]:
