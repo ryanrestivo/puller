@@ -122,7 +122,7 @@ def isperson_logic(person, team_id):
     if results[-1]['isPerson'] == True:
       pass
     else:
-      print(results[-1]['isPerson'])
+      print(f"{person} is not a person")
       raise Exception
   else:
       pass
