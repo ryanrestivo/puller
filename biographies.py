@@ -280,6 +280,8 @@ def bio_creator(team_id, person):
   except:
     item_text = ' '.join(list(set([i['mention'] for i in data])))
     item_total = len([i['mention'] for i in data]) 
+  if len(item_text) > 2000:
+      item_text = item_text[:2000]
   ### RUN DATA THROUGH LLM ENDPOINT
   readout = shot_taker({'training': f'Base all of what you know about this source from the text. You must be certain when using this information. Create a python dict of items. Create a value "biography" as one long string that does not exceed 1500 characters, create a "role" and "organization" if applicable. Use all of the information given to write your best approximation on who {person} is from the quotes they have said. Be as specific on who they are from their quotes. Use from what they said and how they are mentioned to create a biography of them like this is a solid source to write the bio. DO NOT RETURN ANYTHING OTHER THAN THE DICT. If an item is repeated verbatim, assume that the text is duplicated.',
                                         'rule': f'Here is the mention of the text to use: ',
