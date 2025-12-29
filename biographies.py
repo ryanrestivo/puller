@@ -412,6 +412,8 @@ def wiki_search(person, biography):
         return None
 
 def merge_bio_create(person, biography, merging_bio):
+    if len(merging_bio) > 1000:
+        merging_bio = merging_bio[:500]
     readout_two = shot_taker({'training': f'Here is authoritative infomration about the source {person}. Create a python dict of items. Create a value "biography" as one long string that does not exceed 2500 characters. Use all of the information given to write your best approximation on who {person} is. DO NOT RETURN ANYTHING OTHER THAN THE DICT. ',
                                       'rule': f'Here is our biography: {biography}\n\n Use the data from the source to mix with the data we have to create a more robust biography, one that should not exceed 2500 characters. Make sure to include our data in with the new data. Here is the new information to add to the biography: ',
                                       'text': merging_bio})
