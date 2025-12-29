@@ -405,6 +405,7 @@ def merge_bio_create(person, biography, merging_bio):
                                       'text': merging_bio})
     try:
       llm_data = ast.literal_eval(readout_two['choices'][-1]['message']['content'])
+      print("LLM Data")
       print(readout_two['choices'][-1]['message']['content'])
     except Exception:
       start_index = readout_two['choices'][-1]['message']['content'].find('{')
@@ -416,6 +417,7 @@ def merge_bio_create(person, biography, merging_bio):
           except Exception:
               llm_data = {}
     keys_to_check = ['biography']
+    print("before logic")
     print(llm_data)
     if all(key in llm_data for key in keys_to_check):
         print("All required keys are present in merge_bio_create.") 
