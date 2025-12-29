@@ -362,10 +362,11 @@ def people_run_through(team_id, people_list, limit=None):
     for person in people_list[:limit]:
         try:
             bio_data = bio_creator(team_id, person)
+            print(f"bio_data done {person}")
             alt_bio = manual_information(team_id, person, bio_data['biography'])
+            print(f"alt_bio done {person}")
             if alt_bio:
                 bio_data['biography'] = alt_bio # alt_bio becomes bio
-            
             if bio_data['total_data'] > 1: # extreme threshold to start
                 # if you have a lot, assume you're famous
                 merged_bio = wiki_search(person, bio_data['biography'])
@@ -374,6 +375,7 @@ def people_run_through(team_id, people_list, limit=None):
                     # this bio supercedes now...
                     bio_data['biography'] = merged_bio
             dataRequestsPUT(team_id,quote_table, {'person': person}, { "$set": bio_data })
+            print(f"{person} updated {datetime.now()}")
         except Exception as e:
             print(f"ERROR: {person}: {e}")
             pass
