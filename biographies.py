@@ -291,7 +291,7 @@ def bio_creator(team_id, person):
         try:
             llm_data = ast.literal_eval(json_string)
         except Exception:
-            llm_data = {}
+            pass
   # CHECK KEYS WE NEED TO HAVE 
   keys_to_check = ['biography', 'role', 'organization']
   if all(key in llm_data for key in keys_to_check):
@@ -343,7 +343,7 @@ def manual_information(team_id, person, biography):
           try:
               llm_data = ast.literal_eval(json_string)
           except Exception:
-              llm_data = {}
+              pass
   keys_to_check = ['biography']
   if all(key in llm_data for key in keys_to_check):
       print("All required keys are present.")
@@ -405,8 +405,7 @@ def merge_bio_create(person, biography, merging_bio):
                                       'text': merging_bio})
     try:
       llm_data = ast.literal_eval(readout_two['choices'][-1]['message']['content'])
-      print("LLM Data")
-      print(readout_two['choices'][-1]['message']['content'])
+      print(llm_data)
     except Exception:
       start_index = readout_two['choices'][-1]['message']['content'].find('{')
       end_index = readout_two['choices'][-1]['message']['content'].rfind('}')
@@ -415,10 +414,8 @@ def merge_bio_create(person, biography, merging_bio):
           try:
               llm_data = ast.literal_eval(json_string)
           except Exception:
-              llm_data = {}
+              pass
     keys_to_check = ['biography']
-    print("before logic")
-    print(llm_data)
     if all(key in llm_data for key in keys_to_check):
         print("All required keys are present in merge_bio_create.") 
         return llm_data['biography']
