@@ -262,7 +262,10 @@ def bio_creator(team_id, person):
                 "mentions.mention": {"$ne": None},
                 "mentions.quotes": {"$ne": None},
             }
-        },
+        },{
+        '$sort': {
+            'mentions.publishDate': -1
+        }},
         {
             "$project": {
                 "_id": 0,
