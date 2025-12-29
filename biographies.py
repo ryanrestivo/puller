@@ -320,12 +320,17 @@ def manual_information(team_id, person, biography):
   data2 = data2[-1]
   seen = set()
   unique_data = []
-  for item in ['information', 'other-information','role','organization']:
-      if item in data2:
-          mention = f"{item.title()}: {''.join(data2[item])}\n" 
-          if mention not in seen:
-              seen.add(mention)
-              unique_data.append(mention)
+  for item in ['information', 'other-information','role','organization', 'additional-information']:
+    print(item)
+    if item in data2:
+        if item == 'additional-information':
+            for b in range(0,len(data2[item])):
+                unique_data.append(f"UPDATE {data2[item][b]['datetime']}: {data2[item][b]['information']}")
+            else:
+                mention = f"{item.title()}: {''.join(data2[item])}\n" 
+            if mention not in seen:
+                seen.add(mention)
+                unique_data.append(mention)
   other_text = ''.join(unique_data)
   if len(other_text) == 0:
     return None
