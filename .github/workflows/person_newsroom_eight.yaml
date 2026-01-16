@@ -3,7 +3,7 @@ name: Cleanup People for NEWSROOM_EIGHT
 on:
   workflow_dispatch:
   schedule:
-    - cron: "49 1 * * *"
+    - cron: "49 17 * * *"
 
 jobs:
   importer:
@@ -33,7 +33,7 @@ jobs:
         env:
           PIP_CACHE_DIR: ~/.cache/pip
 
-      - name: Bios Newsroom Five
+      - name: Bios Newsroom Eight
         env:
           MY_SECRET_JSON: ${{ secrets.MY_SECRET_JSON }}
           NEWSROOM_VARIABLE: ${{ secrets.NEWSROOM_EIGHT }}

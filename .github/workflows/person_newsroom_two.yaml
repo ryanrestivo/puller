@@ -3,7 +3,7 @@ name: Cleanup People for NEWSROOM_TWO
 on:
   workflow_dispatch:
   schedule:
-    - cron: "49 1 * * *"
+    - cron: "49 4 * * *"
 
 jobs:
   importer:
