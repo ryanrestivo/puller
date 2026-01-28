@@ -230,5 +230,11 @@ if __name__ in "__main__":
         print("Environment variable NEWSROOM_VARIABLE is not set.")
     print(f"Running {endpoint_space['team_id']}")
     team_id = endpoint_space['team_id']
-    author_other_title_finder(team_id)
-    plural_people(team_id)
+    try:
+        author_other_title_finder(team_id)
+    except Exception as e:
+        print(f"author_other_title_finder error: {e}")
+    try:
+        plural_people(team_id)
+    except Exception as e:
+        print(f"plural_people error: {e}")
