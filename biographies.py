@@ -252,6 +252,7 @@ def bio_update_needed(team_id):
 
 
 def bio_creator(team_id, person):
+  ### TODO - debug today 2/2/26
   ## GET THEIR BIO INFO FROM THEIR TEAM
   pipeline = [
         {"$match": {"person": person}},
@@ -371,6 +372,7 @@ def people_run_through(team_id, people_list, limit=None):
         limit = len(people_list)
     for person in people_list[:limit]:
         try:
+            print(f"starting bio data for {person}")
             bio_data = bio_creator(team_id, person)
             print(f"bio_data done {person}")
             alt_bio = manual_information(team_id, person, bio_data['biography'])
