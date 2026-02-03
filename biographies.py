@@ -252,6 +252,16 @@ def bio_update_needed(team_id):
 
 
 def bio_creator(team_id, person):
+  ### TODO - debug today 2/2/26
+
+  # ! so we know the error is in here 
+
+  ### ERROR: Tony Vitello: Expecting value: line 1 column 1 (char 0)
+
+  ## LETS FIGURE OUT WHY LATER
+
+
+
   ## GET THEIR BIO INFO FROM THEIR TEAM
   pipeline = [
         {"$match": {"person": person}},
@@ -260,7 +270,7 @@ def bio_creator(team_id, person):
         {
             "$match": {
                 "mentions.mention": {"$ne": None},
-                "mentions.quotes": {"$ne": None},
+                #"mentions.quotes": {"$ne": None},
             }
         },{
         '$sort': {
@@ -275,20 +285,26 @@ def bio_creator(team_id, person):
         }]
   data = dataRequestsGet(team_id, quote_table, pipeline, "aggregate")
   try:
-    item_text = ' '.join(list(set([i['mention'] for i in data] + [i['quote'] for i in data])))
-    item_total = len([i['mention'] for i in data]) + len([i['quote'] for i in data])
+    # if they have quotes
+    item_text = ' '.join(list(set([i['mention'] for i in data if i['mention'] is not None] + [i['quote'] for i in data  if i['quote'] is not None])))
+    item_total = len([i['mention'] for i in data if i['mention'] is not None]) + len([i['quote'] for i in data if i['quote'] is not None])
   except:
-    item_text = ' '.join(list(set([i['mention'] for i in data])))
-    item_total = len([i['mention'] for i in data]) 
+    item_text = ' '.join(list(set([i['mention'] for i in data if i['mention'] is not None])))
+    item_total = len([i['mention'] for i in data if i['mention'] is not None]) 
   if len(item_text) > 2000:
       item_text = item_text[:2000]
   ### RUN DATA THROUGH LLM ENDPOINT
-  readout = shot_taker({'training': f'Base all of what you know about this source from the text. You must be certain when using this information. Create a python dict of items. Create a value "biography" as one long string that does not exceed 1500 characters, create a "role" and "organization" if applicable. Use all of the information given to write your best approximation on who {person} is from the quotes they have said. Be as specific on who they are from their quotes. Use from what they said and how they are mentioned to create a biography of them like this is a solid source to write the bio. DO NOT RETURN ANYTHING OTHER THAN THE DICT. If an item is repeated verbatim, assume that the text is duplicated.',
+  try:
+    readout = shot_taker({'training': f'Base all of what you know about this source from the text. You must be certain when using this information. Create a python dict of items. Create a value "biography" as one long string that does not exceed 1500 characters, create a "role" and "organization" if applicable. Use all of the information given to write your best approximation on who {person} is from the quotes they have said. Be as specific on who they are from their quotes. Use from what they said and how they are mentioned to create a biography of them like this is a solid source to write the bio. DO NOT RETURN ANYTHING OTHER THAN THE DICT. If an item is repeated verbatim, assume that the text is duplicated.',
                                         'rule': f'Here is the mention of the text to use: ',
                                         'text': item_text})
+    #print(readout)
+  except json.JSONDecodeError as e:
+    raise ValueError(f"shot_taker returned invalid JSON with {e}")
   try:
     llm_data = ast.literal_eval(readout['choices'][-1]['message']['content'])
-  except Exception:
+  except Exception as e:
+    print(f"Error on llm_data: {e}")
     start_index = readout['choices'][-1]['message']['content'].find('{')
     end_index = readout['choices'][-1]['message']['content'].rfind('}')
     if start_index != -1 and end_index != -1:
@@ -371,6 +387,7 @@ def people_run_through(team_id, people_list, limit=None):
         limit = len(people_list)
     for person in people_list[:limit]:
         try:
+            print(f"starting bio data for {person}")
             bio_data = bio_creator(team_id, person)
             print(f"bio_data done {person}")
             alt_bio = manual_information(team_id, person, bio_data['biography'])
