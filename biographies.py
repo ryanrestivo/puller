@@ -288,8 +288,11 @@ def bio_creator(team_id, person):
     item_text = ' '.join(list(set([i['mention'] for i in data] + [i['quote'] for i in data])))
     item_total = len([i['mention'] for i in data]) + len([i['quote'] for i in data])
   except:
-    item_text = ' '.join(list(set([i['mention'] for i in data])))
-    item_total = len([i['mention'] for i in data]) 
+    try:
+        item_text = ' '.join(list(set([i['mention'] for i in data])))
+        item_total = len([i['mention'] for i in data]) 
+    except KeyError:
+        raise ValueError("data contains invalid keys like 'mention' or 'quote'")
   if len(item_text) > 2000:
       item_text = item_text[:2000]
   ### RUN DATA THROUGH LLM ENDPOINT
