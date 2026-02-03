@@ -270,7 +270,7 @@ def bio_creator(team_id, person):
         {
             "$match": {
                 "mentions.mention": {"$ne": None},
-                "mentions.quotes": {"$ne": None},
+                #"mentions.quotes": {"$ne": None},
             }
         },{
         '$sort': {
@@ -285,14 +285,12 @@ def bio_creator(team_id, person):
         }]
   data = dataRequestsGet(team_id, quote_table, pipeline, "aggregate")
   try:
-    item_text = ' '.join(list(set([i['mention'] for i in data] + [i['quote'] for i in data])))
-    item_total = len([i['mention'] for i in data]) + len([i['quote'] for i in data])
+    # if they have quotes
+    item_text = ' '.join(list(set([i['mention'] for i in data if i['mention'] is not None] + [i['quote'] for i in data  if i['quote'] is not None])))
+    item_total = len([i['mention'] for i in data if i['mention'] is not None]) + len([i['quote'] for i in data if i['quote'] is not None])
   except:
-    try:
-        item_text = ' '.join(list(set([i['mention'] for i in data])))
-        item_total = len([i['mention'] for i in data]) 
-    except KeyError:
-        raise ValueError("data contains invalid keys like 'mention' or 'quote'")
+    item_text = ' '.join(list(set([i['mention'] for i in data if i['mention'] is not None])))
+    item_total = len([i['mention'] for i in data if i['mention'] is not None]) 
   if len(item_text) > 2000:
       item_text = item_text[:2000]
   ### RUN DATA THROUGH LLM ENDPOINT
