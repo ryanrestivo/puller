@@ -301,18 +301,21 @@ def bio_creator(team_id, person):
     #print(readout)
   except json.JSONDecodeError as e:
     raise ValueError(f"shot_taker returned invalid JSON with {e}")
-  try:
-    llm_data = ast.literal_eval(readout['choices'][-1]['message']['content'])
-  except Exception as e:
-    print(f"Error on llm_data: {e}")
-    start_index = readout['choices'][-1]['message']['content'].find('{')
-    end_index = readout['choices'][-1]['message']['content'].rfind('}')
-    if start_index != -1 and end_index != -1:
-        json_string = readout['choices'][-1]['message']['content'][start_index:end_index + 1]
-        try:
-            llm_data = ast.literal_eval(json_string)
-        except Exception:
-            pass
+  try: 
+      llm_data = readout['choices'][-1]['message']['content']
+  except: 
+    try:
+        llm_data = ast.literal_eval(readout['choices'][-1]['message']['content'])
+    except Exception as e:
+        print(f"Error on llm_data: {e}")
+        start_index = readout['choices'][-1]['message']['content'].find('{')
+        end_index = readout['choices'][-1]['message']['content'].rfind('}')
+        if start_index != -1 and end_index != -1:
+            json_string = readout['choices'][-1]['message']['content'][start_index:end_index + 1]
+            try:
+                llm_data = ast.literal_eval(json_string)
+            except Exception:
+                pass
   # CHECK KEYS WE NEED TO HAVE 
   keys_to_check = ['biography', 'role', 'organization']
   if all(key in llm_data for key in keys_to_check):
