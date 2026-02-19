@@ -302,7 +302,7 @@ def bio_creator(team_id, person):
   except json.JSONDecodeError as e:
     raise ValueError(f"shot_taker returned invalid JSON with {e}")
   try: 
-      llm_data = readout['choices'][-1]['message']['content']
+      llm_data = json.loads(readout['choices'][-1]['message']['content'])
   except: 
     try:
         llm_data = ast.literal_eval(readout['choices'][-1]['message']['content'])
@@ -363,16 +363,19 @@ def manual_information(team_id, person, biography):
                                       'rule': f'Here is the text from the staff of the paper.\n\n {other_text}. Use this data that is known about the source to rewrite this biography of the source and add more detail where necessary. Keep as much as possible, but add details where necessary. Here is the current biography to edit: ',
                                       'text': biography})
     try:
-      llm_data = ast.literal_eval(readout_two['choices'][-1]['message']['content'])
-    except Exception:
-      start_index = readout_two['choices'][-1]['message']['content'].find('{')
-      end_index = readout_two['choices'][-1]['message']['content'].rfind('}')
-      if start_index != -1 and end_index != -1:
-          json_string = readout_two['choices'][-1]['message']['content'][start_index:end_index + 1]
-          try:
-              llm_data = ast.literal_eval(json_string)
-          except Exception:
-              pass
+        llm_data = json.loads(readout_two['choices'][-1]['message']['content'])
+    except:
+        try:
+            llm_data = ast.literal_eval(readout_two['choices'][-1]['message']['content'])
+        except Exception:
+            start_index = readout_two['choices'][-1]['message']['content'].find('{')
+            end_index = readout_two['choices'][-1]['message']['content'].rfind('}')
+            if start_index != -1 and end_index != -1:
+                json_string = readout_two['choices'][-1]['message']['content'][start_index:end_index + 1]
+                try:
+                    llm_data = ast.literal_eval(json_string)
+                except Exception:
+                    pass
   keys_to_check = ['biography']
   if all(key in llm_data for key in keys_to_check):
       print("All required keys are present.")
@@ -438,17 +441,20 @@ def merge_bio_create(person, biography, merging_bio):
                                       'rule': f'Here is our biography: {biography}\n\n Use the data from the source to mix with the data we have to create a more robust biography, one that should not exceed 2500 characters. Make sure to include our data in with the new data. Here is the new information to add to the biography: ',
                                       'text': merging_bio})
     try:
-      llm_data = ast.literal_eval(readout_two['choices'][-1]['message']['content'])
-      print(llm_data)
-    except Exception:
-      start_index = readout_two['choices'][-1]['message']['content'].find('{')
-      end_index = readout_two['choices'][-1]['message']['content'].rfind('}')
-      if start_index != -1 and end_index != -1:
-          json_string = readout_two['choices'][-1]['message']['content'][start_index:end_index + 1]
-          try:
-              llm_data = ast.literal_eval(json_string)
-          except Exception:
-              pass
+        llm_data = json.loads(readout_two['choices'][-1]['message']['content'])
+    except:
+        try:
+            llm_data = ast.literal_eval(readout_two['choices'][-1]['message']['content'])
+            print(llm_data)
+        except Exception:
+            start_index = readout_two['choices'][-1]['message']['content'].find('{')
+            end_index = readout_two['choices'][-1]['message']['content'].rfind('}')
+            if start_index != -1 and end_index != -1:
+                json_string = readout_two['choices'][-1]['message']['content'][start_index:end_index + 1]
+                try:
+                    llm_data = ast.literal_eval(json_string)
+                except Exception:
+                    pass
     keys_to_check = ['biography']
     if all(key in llm_data for key in keys_to_check):
         print("All required keys are present in merge_bio_create.") 
