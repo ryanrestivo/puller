@@ -578,13 +578,19 @@ if __name__ in "__main__":
         }}]
         people_list = dataRequestsGet(team_id, quote_table, pipeline_people, "aggregate")
         for i in people_list:
-            dead_checker(i['person'], team_id)
+            try:
+                dead_checker(i['person'], team_id)
+            except:
+                pass
     except:
         pass
 
     try:
         people_listing = bio_update_needed(team_id)
         for a in people_listing:
-            dead_checker(a, team_id)
+            try:
+                dead_checker(a, team_id)
+            except:
+                pass
     except:
         pass
