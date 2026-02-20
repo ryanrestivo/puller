@@ -301,18 +301,21 @@ def bio_creator(team_id, person):
     #print(readout)
   except json.JSONDecodeError as e:
     raise ValueError(f"shot_taker returned invalid JSON with {e}")
-  try:
-    llm_data = ast.literal_eval(readout['choices'][-1]['message']['content'])
-  except Exception as e:
-    print(f"Error on llm_data: {e}")
-    start_index = readout['choices'][-1]['message']['content'].find('{')
-    end_index = readout['choices'][-1]['message']['content'].rfind('}')
-    if start_index != -1 and end_index != -1:
-        json_string = readout['choices'][-1]['message']['content'][start_index:end_index + 1]
-        try:
-            llm_data = ast.literal_eval(json_string)
-        except Exception:
-            pass
+  try: 
+      llm_data = json.loads(readout['choices'][-1]['message']['content'])
+  except: 
+    try:
+        llm_data = ast.literal_eval(readout['choices'][-1]['message']['content'])
+    except Exception as e:
+        print(f"Error on llm_data: {e}")
+        start_index = readout['choices'][-1]['message']['content'].find('{')
+        end_index = readout['choices'][-1]['message']['content'].rfind('}')
+        if start_index != -1 and end_index != -1:
+            json_string = readout['choices'][-1]['message']['content'][start_index:end_index + 1]
+            try:
+                llm_data = ast.literal_eval(json_string)
+            except Exception:
+                pass
   # CHECK KEYS WE NEED TO HAVE 
   keys_to_check = ['biography', 'role', 'organization']
   if all(key in llm_data for key in keys_to_check):
@@ -360,16 +363,19 @@ def manual_information(team_id, person, biography):
                                       'rule': f'Here is the text from the staff of the paper.\n\n {other_text}. Use this data that is known about the source to rewrite this biography of the source and add more detail where necessary. Keep as much as possible, but add details where necessary. Here is the current biography to edit: ',
                                       'text': biography})
     try:
-      llm_data = ast.literal_eval(readout_two['choices'][-1]['message']['content'])
-    except Exception:
-      start_index = readout_two['choices'][-1]['message']['content'].find('{')
-      end_index = readout_two['choices'][-1]['message']['content'].rfind('}')
-      if start_index != -1 and end_index != -1:
-          json_string = readout_two['choices'][-1]['message']['content'][start_index:end_index + 1]
-          try:
-              llm_data = ast.literal_eval(json_string)
-          except Exception:
-              pass
+        llm_data = json.loads(readout_two['choices'][-1]['message']['content'])
+    except:
+        try:
+            llm_data = ast.literal_eval(readout_two['choices'][-1]['message']['content'])
+        except Exception:
+            start_index = readout_two['choices'][-1]['message']['content'].find('{')
+            end_index = readout_two['choices'][-1]['message']['content'].rfind('}')
+            if start_index != -1 and end_index != -1:
+                json_string = readout_two['choices'][-1]['message']['content'][start_index:end_index + 1]
+                try:
+                    llm_data = ast.literal_eval(json_string)
+                except Exception:
+                    pass
   keys_to_check = ['biography']
   if all(key in llm_data for key in keys_to_check):
       print("All required keys are present.")
@@ -435,17 +441,20 @@ def merge_bio_create(person, biography, merging_bio):
                                       'rule': f'Here is our biography: {biography}\n\n Use the data from the source to mix with the data we have to create a more robust biography, one that should not exceed 2500 characters. Make sure to include our data in with the new data. Here is the new information to add to the biography: ',
                                       'text': merging_bio})
     try:
-      llm_data = ast.literal_eval(readout_two['choices'][-1]['message']['content'])
-      print(llm_data)
-    except Exception:
-      start_index = readout_two['choices'][-1]['message']['content'].find('{')
-      end_index = readout_two['choices'][-1]['message']['content'].rfind('}')
-      if start_index != -1 and end_index != -1:
-          json_string = readout_two['choices'][-1]['message']['content'][start_index:end_index + 1]
-          try:
-              llm_data = ast.literal_eval(json_string)
-          except Exception:
-              pass
+        llm_data = json.loads(readout_two['choices'][-1]['message']['content'])
+    except:
+        try:
+            llm_data = ast.literal_eval(readout_two['choices'][-1]['message']['content'])
+            print(llm_data)
+        except Exception:
+            start_index = readout_two['choices'][-1]['message']['content'].find('{')
+            end_index = readout_two['choices'][-1]['message']['content'].rfind('}')
+            if start_index != -1 and end_index != -1:
+                json_string = readout_two['choices'][-1]['message']['content'][start_index:end_index + 1]
+                try:
+                    llm_data = ast.literal_eval(json_string)
+                except Exception:
+                    pass
     keys_to_check = ['biography']
     if all(key in llm_data for key in keys_to_check):
         print("All required keys are present in merge_bio_create.") 
@@ -460,6 +469,68 @@ def comparison(person, text1, text2):
                                   'rule': f'All you need to do is return boolean True or False. If the two biographies are matching the same person, return True, if they are not return False. ONLY RETURN THE BOOLEAN TRUE or FALSE. Here is the text to evaluate: ',
                                   'text': f'Here are the two texts to evaluate\n\n TEXT1: {text1}\n\nTEXT2: {text2}'})
     return bool(comparison_readout['choices'][-1]['message']['content'])
+
+def dead_checker(person, team_id):
+  pipeline2 = [
+      {'$match': {'person': person}},
+      {'$unwind': '$mentions'},
+      {"$match": {"mentions.publishDate": {"$exists": True}}},
+      {"$project": {
+          "_id": 0,
+          "person": 1,
+          "publishDate": "$mentions.publishDate",
+          "site": "$mentions.site",
+      }},
+        {
+          '$sort': {
+              'publishDate': -1
+          }
+      },
+      {
+          '$limit': 1
+      }
+      ]
+  person_data = dataRequestsGet(team_id, quote_table, pipeline2, "aggregate")
+  try:
+      story_item = dataRequestsGet(team_id, 'storyData',[
+      {'$match': {'site': person_data[0]['site']}},
+      {"$project": {
+          "_id": 0,
+          "paragraphText": 1,
+      }}    ],"aggregate")
+  except: 
+      # some are different
+      story_item = dataRequestsGet(team_id, 'siteData',[
+      {'$match': {'site': person_data[0]['site']}},
+      {"$project": {
+          "_id": 0,
+          "paragraphText": 1,
+      }}    ],"aggregate")
+  readout_dead = shot_taker({'training': f'Read the most recent story that mentions {person}. The goal is to use the story to evaluate whether the person is dead or not.',
+                                        'rule': f'Create a python dict of items. If what the story describes is that {person} is dead and you are sure of it then create a value "dead" as True. If a person is not dead, return an empty dict. DO NOT RETURN ANYTHING OTHER THAN THE DICT. Here is the text from the most recent story.\n\n',
+                                        'text': story_item[0]['paragraphText']})
+  try:
+    llm_data = json.loads(readout_dead['choices'][-1]['message']['content'])
+  except:
+    try:
+      llm_data = ast.literal_eval(readout_dead['choices'][-1]['message']['content'])
+    except:
+      start_index = readout_dead['choices'][-1]['message']['content'].find('{')
+      end_index = readout_dead['choices'][-1]['message']['content'].rfind('}')
+      if start_index != -1 and end_index != -1:
+          json_string = readout_dead['choices'][-1]['message']['content'][start_index:end_index + 1]
+          try:
+              llm_data = ast.literal_eval(json_string)
+          except Exception:
+              pass
+  try:
+    if llm_data['dead']:
+      llm_data['isPerson'] = False
+      print(person)
+      dataRequestsPUT(team_id,quote_table, {'person': person}, { "$set": llm_data })
+  except Exception as e:
+    #print(f"{person} not {e}")
+    dataRequestsPUT(team_id,quote_table, {'person': person}, { "$set": {'dead': False} })
 
 if __name__ in "__main__":
     feed_string = os.getenv("NEWSROOM_VARIABLE") 
@@ -495,3 +566,31 @@ if __name__ in "__main__":
             people_run_through(team_id, date_updates)
     except Exception as e:
         print(f"Updating run failed {e}")
+
+    # Check if dead using update list
+    try:
+        pipeline_people = [
+        {'$match': {'isPerson': {'$eq': True},
+                    'dead': {'$exists': False}}},
+        {"$project": {
+            "_id": 0,
+            "person": 1,
+        }}]
+        people_list = dataRequestsGet(team_id, quote_table, pipeline_people, "aggregate")
+        for i in people_list:
+            try:
+                dead_checker(i['person'], team_id)
+            except:
+                pass
+    except:
+        pass
+
+    try:
+        people_listing = bio_update_needed(team_id)
+        for a in people_listing:
+            try:
+                dead_checker(a, team_id)
+            except:
+                pass
+    except:
+        pass
