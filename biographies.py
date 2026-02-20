@@ -526,10 +526,10 @@ def dead_checker(person, team_id):
   try:
     if llm_data['dead']:
       llm_data['isPerson'] = False
-      print(llm_data)
+      print(person)
       dataRequestsPUT(team_id,quote_table, {'person': person}, { "$set": llm_data })
   except Exception as e:
-    print(f"{person} not {e}")
+    #print(f"{person} not {e}")
     dataRequestsPUT(team_id,quote_table, {'person': person}, { "$set": {'dead': False} })
 
 if __name__ in "__main__":
