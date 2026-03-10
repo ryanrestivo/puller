@@ -337,7 +337,8 @@ def manual_information(team_id, person, biography):
             "information": 1,
             "role": 1,
             "organization": 1,
-            "other-information": 1
+            "other-information": 1,
+            'additional-information': 1
         }
     }]
   data2 = dataRequestsGet(team_id, quote_table, pipeline, "aggregate")
@@ -351,7 +352,10 @@ def manual_information(team_id, person, biography):
             for b in range(0,len(data2[item])):
                 unique_data.append(f"UPDATE {data2[item][b]['datetime']}: {data2[item][b]['information']}")
             else:
-                mention = f"{item.title()}: {''.join(data2[item])}\n" 
+                try:
+                  mention = f"{item.title()}: {''.join(data2[item])}\n" 
+                except:
+                  mention = f"{item.title()}: {str(data2[item])}\n" 
             if mention not in seen:
                 seen.add(mention)
                 unique_data.append(mention)
