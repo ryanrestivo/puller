@@ -33,7 +33,7 @@ jobs:
         env:
           PIP_CACHE_DIR: ~/.cache/pip
 
-      - name: Bios Newsroom Seven
+      - name: People Correct Newsroom Seven
         env:
           MY_SECRET_JSON: ${{ secrets.MY_SECRET_JSON }}
           NEWSROOM_VARIABLE: ${{ secrets.NEWSROOM_SEVEN }}
