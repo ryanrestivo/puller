@@ -163,6 +163,9 @@ def author_other_title_finder(team_id):
                 print(f"Symbols found in '{i['person']}': {i['person']}")
                 print("Flags: Remove symbols and process accordingly")
                 dataRequestsPUT(team_id, quote_table, {"person": i['person']},{"$set": {"isPerson": False}})
+            if '\n' in i['person']:
+                print(f"line break found in '{i['person']}'")
+                dataRequestsPUT(team_id, quote_table, {"person": i['person']},{"$set": {"isPerson": False}})
             for word in i['person'].split():
                 if word in titles_and_parties:
                     ## WE LOOK UP THE PERSON WITHOUT THE TERM
