@@ -80,7 +80,9 @@ def get_source_list(team_id):
             '$sort': {
                 'total_data': -1
             }
-        }
+        },{
+        '$limit': 50
+    }
     ]
     people_data = dataRequestsGet(team_id,quote_table, pipeline, "aggregate")
     return people_data
@@ -102,7 +104,6 @@ def get_link_data(link):
 
 def search_endpoint(query, max_results=10):
     base_url = os.getenv("SEARCH_API")
-    print(base_url)
     params = {
         "q": query
     }
@@ -128,9 +129,10 @@ def search_endpoint(query, max_results=10):
     }
     session = requests.Session()
     session.headers.update(headers)
-    response = requests.get(base_url, data=params, headers=headers, timeout=10)
+    response = requests.get(base_url, params=params, headers=headers, timeout=10)
     response.raise_for_status()
     soup = BeautifulSoup(response.text, "html.parser")
+    print(response)
     results = []
     result_blocks = soup.find_all("div", class_="result")
     for block in result_blocks:
