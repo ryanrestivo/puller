@@ -81,7 +81,7 @@ def get_source_list(team_id):
                 'total_data': -1
             }
         },{
-        '$limit': 50
+        '$limit': 1
     }
     ]
     people_data = dataRequestsGet(team_id,quote_table, pipeline, "aggregate")
@@ -104,6 +104,7 @@ def get_link_data(link):
 
 def search_endpoint(query, max_results=10):
     base_url = os.getenv("SEARCH_API")
+    print(base_url)
     params = {
         "q": query
     }
