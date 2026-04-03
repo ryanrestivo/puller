@@ -81,7 +81,7 @@ def get_source_list(team_id):
                 'total_data': -1
             }
         },{
-        '$limit': 1
+        '$limit': 20
     }
     ]
     people_data = dataRequestsGet(team_id,quote_table, pipeline, "aggregate")
@@ -133,7 +133,6 @@ def search_endpoint(query, max_results=10):
     response = requests.get(base_url, params=params, headers=headers, timeout=10)
     response.raise_for_status()
     soup = BeautifulSoup(response.text, "html.parser")
-    print(response)
     results = []
     result_blocks = soup.find_all("div", class_="result")
     for block in result_blocks:
@@ -182,6 +181,7 @@ def people_generation(team_id, people_data):
                 bio_data['search_data'] = results
                 try:
                     dataRequestsPUT(team_id,quote_table, {'person': people['person']}, { "$set": bio_data })
+                    print(f"updated {people['person']}")
                 except:
                     pass
     except Exception as e:
