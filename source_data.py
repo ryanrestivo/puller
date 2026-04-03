@@ -133,6 +133,7 @@ def search_endpoint(query, max_results=10):
     response = requests.get(base_url, params=params, headers=headers, timeout=10)
     response.raise_for_status()
     soup = BeautifulSoup(response.text, "html.parser")
+    print(soup)
     results = []
     result_blocks = soup.find_all("div", class_="result")
     for block in result_blocks:
