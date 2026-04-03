@@ -102,6 +102,7 @@ def get_link_data(link):
 
 def search_endpoint(query, max_results=10):
     base_url = os.getenv("SEARCH_API")
+    print(base_url)
     params = {
         "q": query
     }

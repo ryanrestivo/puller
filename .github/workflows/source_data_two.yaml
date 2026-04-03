@@ -39,5 +39,6 @@ jobs:
           NEWSROOM_VARIABLE: ${{ secrets.NEWSROOM_TWO }}
           QUOTE_TABLE: ${{ secrets.QUOTE_TABLE }}
           BACKEND_API: ${{ secrets.BACKEND_API }}
+          SEARCH_API: ${{ secrets.SEARCH_API }}
         run: |
           python source_data.py
