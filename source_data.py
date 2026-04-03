@@ -109,19 +109,9 @@ def search_endpoint(query, max_results=10):
         "q": query
     }
     user_agents = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
-        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Edg/119.0.2048.71",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36 Edg/118.0.2089.115",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.60",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.83",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1907.170",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.83",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36 Edg/113.0.1900.123",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36 Edg/112.0.1722.96",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36 Edg/111.0.1661.62",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.69",]
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36",]
     headers = {
     "User-Agent": random.choice(user_agents),
     "Accept-Language": "en-US,en;q=0.9",
@@ -133,6 +123,7 @@ def search_endpoint(query, max_results=10):
     response = requests.get(base_url, params=params, headers=headers, timeout=10)
     response.raise_for_status()
     soup = BeautifulSoup(response.text, "html.parser")
+    print(soup)
     results = []
     result_blocks = soup.find_all("div", class_="result")
     for block in result_blocks:
@@ -153,39 +144,39 @@ def search_endpoint(query, max_results=10):
 
 def people_generation(team_id, people_data):
   for people in people_data:
-    try:
-        invalid_values = ['', 'unknown', 'N/A', 'none', 'not provided', '---']
-        if type(people['organization']) is list:
-            org = ' '.join(people['organization'])
-        elif type(people['organization']) is dict:
-            org = str(people['organization'])
+    #try:
+    invalid_values = ['', 'unknown', 'N/A', 'none', 'not provided', '---']
+    if type(people['organization']) is list:
+        org = ' '.join(people['organization'])
+    elif type(people['organization']) is dict:
+        org = str(people['organization'])
+    else:
+        org = people['organization']
+    if org.lower() not in [v.lower() for v in invalid_values]:
+        search_string = f"{people['person']} {people['organization']}"
+        results = search_endpoint(search_string)
+        if len(results) == 0:
+            print(people['person'])
         else:
-            org = people['organization']
-        if org.lower() not in [v.lower() for v in invalid_values]:
-            search_string = f"{people['person']} {people['organization']}"
-            results = search_endpoint(search_string)
-            if len(results) == 0:
-                print(people['person'])
-            else:
-                print(people['person'])
-                print(len(results))
-                for a in results:
-                    parsed_url = urllib.parse.unquote(a['link']).split('uddg=')[-1].split('&rut=')[0]
-                    a['link'] = parsed_url
-                    try:
-                        a['paragraphText'] = get_link_data(parsed_url)
-                        print(f"pulled {parsed_url}")
-                    except:
-                        pass
-                bio_data = {}
-                bio_data['search_data'] = results
+            print(people['person'])
+            #print(len(results))
+            for a in results:
+                parsed_url = urllib.parse.unquote(a['link']).split('uddg=')[-1].split('&rut=')[0]
+                a['link'] = parsed_url
                 try:
-                    dataRequestsPUT(team_id,quote_table, {'person': people['person']}, { "$set": bio_data })
-                    print(f"updated {people['person']}")
+                    a['paragraphText'] = get_link_data(parsed_url)
+                    print(f"pulled {parsed_url}")
                 except:
                     pass
-    except Exception as e:
-        print(f"Error processing {people['person']}: {str(e)}")
+            bio_data = {}
+            bio_data['search_data'] = results
+            try:
+                dataRequestsPUT(team_id,quote_table, {'person': people['person']}, { "$set": bio_data })
+                print(f"updated {people['person']}")
+            except:
+                pass
+    #except Exception as e:
+        #print(f"Error processing {people['person']}: {str(e)}")
 
 
 if __name__ in "__main__":
