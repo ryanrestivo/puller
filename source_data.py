@@ -153,39 +153,39 @@ def search_endpoint(query, max_results=10):
 
 def people_generation(team_id, people_data):
   for people in people_data:
-    try:
-        invalid_values = ['', 'unknown', 'N/A', 'none', 'not provided', '---']
-        if type(people['organization']) is list:
-            org = ' '.join(people['organization'])
-        elif type(people['organization']) is dict:
-            org = str(people['organization'])
+    #try:
+    invalid_values = ['', 'unknown', 'N/A', 'none', 'not provided', '---']
+    if type(people['organization']) is list:
+        org = ' '.join(people['organization'])
+    elif type(people['organization']) is dict:
+        org = str(people['organization'])
+    else:
+        org = people['organization']
+    if org.lower() not in [v.lower() for v in invalid_values]:
+        search_string = f"{people['person']} {people['organization']}"
+        results = search_endpoint(search_string)
+        if len(results) == 0:
+            print(people['person'])
         else:
-            org = people['organization']
-        if org.lower() not in [v.lower() for v in invalid_values]:
-            search_string = f"{people['person']} {people['organization']}"
-            results = search_endpoint(search_string)
-            if len(results) == 0:
-                print(people['person'])
-            else:
-                print(people['person'])
-                print(len(results))
-                for a in results:
-                    parsed_url = urllib.parse.unquote(a['link']).split('uddg=')[-1].split('&rut=')[0]
-                    a['link'] = parsed_url
-                    try:
-                        a['paragraphText'] = get_link_data(parsed_url)
-                        print(f"pulled {parsed_url}")
-                    except:
-                        pass
-                bio_data = {}
-                bio_data['search_data'] = results
+            print(people['person'])
+            #print(len(results))
+            for a in results:
+                parsed_url = urllib.parse.unquote(a['link']).split('uddg=')[-1].split('&rut=')[0]
+                a['link'] = parsed_url
                 try:
-                    dataRequestsPUT(team_id,quote_table, {'person': people['person']}, { "$set": bio_data })
-                    print(f"updated {people['person']}")
+                    a['paragraphText'] = get_link_data(parsed_url)
+                    print(f"pulled {parsed_url}")
                 except:
                     pass
-    except Exception as e:
-        print(f"Error processing {people['person']}: {str(e)}")
+            bio_data = {}
+            bio_data['search_data'] = results
+            try:
+                dataRequestsPUT(team_id,quote_table, {'person': people['person']}, { "$set": bio_data })
+                print(f"updated {people['person']}")
+            except:
+                pass
+    #except Exception as e:
+        #print(f"Error processing {people['person']}: {str(e)}")
 
 
 if __name__ in "__main__":
