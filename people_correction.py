@@ -208,14 +208,14 @@ def plural_people(team_id):
             # Remove the trailing apostrophe and 's'
             cleaned_name = re.sub(r'[’"]s$', '', name)
             #print(f"Cleaned: {cleaned_name}")
-            dataRequestsPUT(team_id, 'quotesData', {"person": i['person']},{"$set": {"isPerson": False}})
+            dataRequestsPUT(team_id, quote_table, {"person": i['person']},{"$set": {"isPerson": False}})
             data = person_data(team_id, cleaned_name)
             if data:
                 if 'error' in data:
                     print("error")
                     print(cleaned_name)
                 else:
-                    dataRequestsPUT(team_id, 'quotesData', {"person": i['person']},{"$set": {"isPerson": False}})
+                    dataRequestsPUT(team_id, quote_table, {"person": i['person']},{"$set": {"isPerson": False}})
             else:
                 print(f"REVIEW {i['person']}")
         else:
