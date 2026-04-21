@@ -5,42 +5,46 @@ on:
   schedule:
     - cron: "23 7 * * *"
 
+
 jobs:
-  spacy_job:
+  importer:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up Python 3.12 with pip cache
+        uses: actions/setup-python@v6
         with:
-          python-version: "3.9"
+          python-version: "3.12"
+          cache: "pip"
 
-      # Cache the virtual environment
-      - name: Cache venv
-        id: cache-venv
-        uses: actions/cache@v3
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('nlp_requirements.txt') }}-${{ hashFiles('spacy_model.txt') }}
-
-      # Create venv and install deps if cache miss
-      - name: Create venv if missing
-        if: steps.cache-venv.outputs.cache-hit != 'true'
+      - name: Install dependencies
         run: |
-          python -m venv .venv
-          source .venv/bin/activate
           python -m pip install --upgrade pip
           pip install -r nlp_requirements.txt
-          # Install the spacy model listed inside spacy_model.txt
+
+      # Cache spaCy model directory
+      - name: Cache spaCy model
+        id: cache-spacy
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/spacy
+          key: spacy-${{ runner.os }}-${{ hashFiles('spacy_model.txt') }}
+
+      - name: Install spaCy model if missing
+        run: |
           python - <<EOF
-          import subprocess
-          import pathlib
+          import subprocess, pathlib, os
 
           model = pathlib.Path("spacy_model.txt").read_text().strip()
-          subprocess.run(["python", "-m", "spacy", "download", model], check=True)
+
+          try:
+              __import__(model)
+              print(f"{model} already installed")
+          except ImportError:
+              subprocess.run(["python", "-m", "spacy", "download", model], check=True)
           EOF
 
       - name: Run People & Quotes Scripts
@@ -61,6 +65,4 @@ jobs:
           QUOTE_TABLE: ${{ secrets.QUOTE_TABLE }}
           SHOT_ENDPOINT: ${{ secrets.SHOT_ENDPOINT }}
           SHOT_ENDPOINT_SECRET: ${{ secrets.SHOT_ENDPOINT_SECRET }}
-        run: |
-          source .venv/bin/activate
-          python quotes.py
+        run: python quotes.py
