@@ -1,8 +1,6 @@
 name: Cleanup People for NEWSROOM_SEVEN
 
 on:
-  permissions:
-    contents: read
   workflow_dispatch:
   schedule:
     - cron: "49 13 * * *"

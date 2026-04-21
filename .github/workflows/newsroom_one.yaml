@@ -1,8 +1,6 @@
 name: NEWSROOM_ONE
 
 on:
-  permissions:
-    contents: read
   workflow_dispatch:
   schedule:
     - cron: "17 7 * * *" # every day at 7:17 am GMT

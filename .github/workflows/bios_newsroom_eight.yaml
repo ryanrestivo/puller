@@ -1,8 +1,6 @@
 name: Biographies for NEWSROOM_EIGHT
 
 on:
-  permissions:
-    contents: read
   workflow_dispatch:
   schedule:
     - cron: "29 12 * * *" 

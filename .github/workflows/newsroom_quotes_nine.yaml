@@ -1,8 +1,6 @@
 name: Run NEWSROOM_NINE People & Quotes
 
 on:
-  permissions:
-    contents: read
   workflow_dispatch:
   schedule:
     - cron: "43 1-20/4 * * *" 

@@ -1,8 +1,6 @@
 name: NEWSROOM_EIGHT
 
 on:
-  permissions:
-    contents: read
   workflow_dispatch:
   schedule:
     - cron: "37 3 * * *"

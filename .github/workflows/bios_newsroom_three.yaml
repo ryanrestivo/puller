@@ -1,8 +1,6 @@
 name: Biographies for NEWSROOM_THREE
 
 on:
-  permissions:
-    contents: read
   workflow_dispatch:
   schedule:
     - cron: "17 18 * * *"

@@ -1,8 +1,6 @@
 name: Run Importer
 
 on:
-  permissions:
-    contents: read
   workflow_dispatch:
   schedule:
     - cron: "17 5 * * *" # every day at 5:17 am GMT

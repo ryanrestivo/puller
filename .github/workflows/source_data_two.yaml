@@ -1,8 +1,6 @@
 name: Source Data for NEWSROOM_TWO
 
 on:
-  permissions:
-    contents: read
   workflow_dispatch:
   #schedule:
   #  - cron: "49 4 * * *"
