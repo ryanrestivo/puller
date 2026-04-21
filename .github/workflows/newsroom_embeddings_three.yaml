@@ -1,6 +1,8 @@
 name: Run NEWSROOM_THREE Embeddings
 
 on:
+  permissions:
+    contents: read
   workflow_dispatch:
   #schedule:
   #  - cron: "19 6 * * *"
@@ -11,17 +13,17 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
+          python-version: '3.12'
 
       # Cache the virtual environment
       - name: Cache venv
         id: cache-venv
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: .venv
           key: venv-${{ runner.os }}-${{ hashFiles('nlp_requirements.txt') }}-${{ hashFiles('spacy_model.txt') }}

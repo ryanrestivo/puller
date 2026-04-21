@@ -1,6 +1,8 @@
 name: NEWSROOM_TWO
 
 on:
+  permissions:
+    contents: read
   workflow_dispatch:
   schedule:
     - cron: "17 8 * * *" # every day at 8:17 am GMT
@@ -11,27 +13,30 @@ jobs:
 
     steps:
       - name: Checkout the Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
+          python-version: '3.12'
 
-      - name: Cache Python Packages
-        uses: actions/cache@v3
+      - name: Cache virtual environment
+        uses: actions/cache@v4
+        id: venv-cache
         with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          path: ~/.venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('.github/workflows/' + github.event.workflow) }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            venv-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}-
+            venv-${{ runner.os }}-
 
-      - name: Install Dependencies or take from Cache
+      - name: Install dependencies
+        if: steps.venv-cache.outputs.cache-hit != 'true'
         run: |
-          python -m pip install --upgrade pip
+          python -m venv ~/.venv
+          source ~/.venv/bin/activate
+          pip install --upgrade pip
           pip install requests bs4
-        env:
-          PIP_CACHE_DIR: ~/.cache/pip
 
       - name: Import Newsroom Two
         env:
