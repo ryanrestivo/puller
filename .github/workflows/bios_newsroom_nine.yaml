@@ -23,7 +23,7 @@ jobs:
         id: venv-cache
         with:
           path: ~/.venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}-${{ hashFiles('.github/workflows/' + github.event.workflow) }}
+          key: venv-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             venv-${{ runner.os }}-${{ hashFiles('**/requirements.txt') }}-
             venv-${{ runner.os }}-
