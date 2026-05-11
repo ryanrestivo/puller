@@ -3,7 +3,7 @@ name: Run NEWSROOM_THREE People & Quotes
 on:
   workflow_dispatch:
   schedule:
-    - cron: "23 7 * * *"
+    - cron: "23 2 * * *"
 
 
 jobs:
