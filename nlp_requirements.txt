@@ -3,3 +3,4 @@ spacy
 requests
 spacy-langdetect
 langdetect
+click
