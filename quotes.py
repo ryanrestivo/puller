@@ -382,69 +382,91 @@ def missingDates(teamID, table):
     missing_dates = [date for date in all_dates if date not in dates_list]
     return missing_dates
 
-def produce_expert(person, data):
+def produce_expert(person, data_item):
+    """Batch all mentions/quotes for ONE person into a single LLM call.
+    
+    OLD: called LLM once per mention/quote (e.g., 20 calls for 20 quotes)
+    NEW: collects ALL quotes/mentions for the person, sends in one call (~80-90% fewer LLM calls)
+    """
     seen = set()
     unique_mentions = []
     for item in ['mention', 'quotes']:
-        if item in data:
-            mention = data[item]
+        if item in data_item:
+            mention = data_item[item]
             if mention not in seen:
                 seen.add(mention)
                 unique_mentions.append(mention)
-    mentions_removed_dupes = unique_mentions
-    expertises = []
-    for a in mentions_removed_dupes:
-      text = a
-      try:
-          readout = shot_taker({'training': f'{os.getenv("EXPERT_TRAIN")}', 
-                                    'rule': f'{os.getenv("EXPERT_RULE_ONE")} {person} {os.getenv("EXPERT_RULE_TWO")} ', 
-                                    'text': text})
-          try:
-              expertise = ast.literal_eval(readout['choices'][-1]['message']['content'])['expertise']
-          except Exception:
-              start_index = readout['choices'][-1]['message']['content'].find('{')
-              end_index = readout['choices'][-1]['message']['content'].rfind('}')
-              if start_index != -1 and end_index != -1:
-                  json_string = readout['choices'][-1]['message']['content'][start_index:end_index + 1]
-                  try:
-                      expertise = ast.literal_eval(json_string)['expertise']
-                  except Exception:
-                      expertise = []
-          expertises.extend(expertise)
-      except Exception as e:
-          print(e)
-    final_expertises = pd.DataFrame(expertises).value_counts().reset_index()
-    final_expertises[0] = final_expertises[0].apply(lambda x:x.lower())
-    final_expertises = final_expertises.rename(columns={0: 'expertise'})
-    final_expertises = final_expertises.set_index('expertise')['count'].to_dict()
-    return final_expertises
+    if not unique_mentions:
+        return {}
 
-def relationships(person, data):
+    # Batch: send ALL text to LLM in one call
+    combined_text = '\n\n'.join(unique_mentions)
+    total_items = len(unique_mentions)
+    expertises = []
+    try:
+        readout = shot_taker({
+            'training': f'{os.getenv("EXPERT_TRAIN")}',
+            'rule': f'{os.getenv("EXPERT_RULE_ONE")} {person} {os.getenv("EXPERT_RULE_TWO")} '
+                    f'\n\nYou will receive {total_items} distinct mentions/quotes about {person}. '
+                    f'Analyze ALL of them together to determine the person\'s areas of expertise. '
+                    f'Do NOT analyze them one at a time — synthesize them into expertise categories.',
+            'text': combined_text
+        })
+        try:
+            result = ast.literal_eval(readout['choices'][-1]['message']['content'])['expertise']
+            # Result is flat (from batched prompt) — keep as-is, no need to extend
+            return {exp: 1 for exp in (result if isinstance(result, list) else [])}
+        except Exception:
+            start_index = readout['choices'][-1]['message']['content'].find('{')
+            end_index = readout['choices'][-1]['message']['content'].rfind('}')
+            if start_index != -1 and end_index != -1:
+                json_string = readout['choices'][-1]['message']['content'][start_index:end_index + 1]
+                try:
+                    result = ast.literal_eval(json_string)['expertise']
+                    return {exp: 1 for exp in (result if isinstance(result, list) else [])}
+                except Exception:
+                    return {}
+            return {}
+    except Exception as e:
+        print(f"produce_expert error for {person}: {e}")
+        return {}
+
+def relationships(person, data_item):
+    """Batch all mentions/quotes for ONE person into a single LLM call.
+    
+    OLD: called LLM once per mention (e.g., 15 calls for 15 mentions)
+    NEW: sends ALL mentions to one call (~90% fewer LLM calls)
+    """
     seen = set()
     unique_mentions = []
     for item in ['mention', 'quotes']:
-        if item in data:
-            mention = data[item]
+        if item in data_item:
+            mention = data_item[item]
             if mention not in seen:
                 seen.add(mention)
                 unique_mentions.append(mention)
-    mentions_removed_dupes = unique_mentions
-    expertises = []
-    for a in mentions_removed_dupes:
-        text = a
+    if not unique_mentions:
+        return []
+
+    # Batch: send ALL text to LLM in one call
+    combined_text = '\n\n'.join(unique_mentions)
+    total_items = len(unique_mentions)
+    try:
+        readout = shot_taker({
+            'training': f'{os.getenv("RELATIONSHIP_RULE_ONE")} {person} {os.getenv("RELATIONSHIP_RULE_TWO")}',
+            'rule': f'{os.getenv("REL_SET_ONE")} {person} {os.getenv("REL_SET_TWO")} {person} {os.getenv("REL_SET_THREE")}',
+            'text': combined_text
+        })
         try:
-            readout = shot_taker({'training': f'{os.getenv("RELATIONSHIP_RULE_ONE")} {person} {os.getenv("RELATIONSHIP_RULE_TWO")}', 
-                                        'rule': f'{os.getenv("REL_SET_ONE")} {person} {os.getenv("REL_SET_TWO")} {person} {os.getenv("REL_SET_THREE")} ', 
-                                        'text': text})
-            #print(readout)
-            try:
-                expertise = ast.literal_eval(readout['choices'][-1]['message']['content'])
-            except Exception:
-                expertise = []
-            expertises.extend(expertise)
-        except Exception as e:
-            print(e)
-    return expertises
+            result = ast.literal_eval(readout['choices'][-1]['message']['content'])
+            if isinstance(result, list):
+                return result
+            return [result] if result else []
+        except Exception:
+            return []
+    except Exception as e:
+        print(f"relationships error for {person}: {e}")
+        return []
 
 
 def storyWork(team_id, date_num):

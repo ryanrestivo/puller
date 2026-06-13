@@ -4,12 +4,15 @@ from datetime import datetime, timedelta
 import os
 import ast
 import re
+import spacy
 
 
-quote_dates = os.getenv('DATES_ENDPOINT')
 quote_table = os.getenv("QUOTE_TABLE")
 llm_service = os.getenv("LLM_SERVICE")
 llm_key = os.getenv('LLM_HEADER')
+
+# Load spaCy for NER — no LLM needed for person detection
+nlp = spacy.load("en_core_web_md")
 
 service_api = os.getenv("BACKEND_API")
 if not service_api:
@@ -66,21 +69,32 @@ def shot_taker(data):
 
 
 def people_reader(person):
-  comparison_readout = shot_taker({'training': f'You are evaluating a string to determine the likelihood of it being a person or not. You are receiving a string determined by an NLP that it might be a person and providing conclusion to it.',
-                  'rule': f'All you need to do is return boolean True or False. If the text string is likely to be a person return True, if they are not return False. ONLY RETURN THE BOOLEAN TRUE or FALSE. ',
-                  'text': f'Here is the text string: {person}'})
-  try:
-    llm_data = ast.literal_eval(comparison_readout['choices'][-1]['message']['content'])
-  except Exception:
-    start_index = comparison_readout['choices'][-1]['message']['content'].find('{')
-    end_index = comparison_readout['choices'][-1]['message']['content'].rfind('}')
-    if start_index != -1 and end_index != -1:
-        json_string = comparison_readout['choices'][-1]['message']['content'][start_index:end_index + 1]
-        try:
-            llm_data = ast.literal_eval(json_string)
-        except Exception:
-            llm_data = {}
-  return llm_data
+    """Determine if 'person' is a real person's name using spaCy NER — no LLM needed.
+    
+    OLD: sent text to LLM to ask 'is this a person?' (wasted LLM token)
+    NEW: uses spaCy to count PERSON entities in the name itself
+    
+    If the input is just a name like 'John Smith', spaCy should tag it as PERSON.
+    If it's a thing like 'World Health Organization', it gets ORG, not PERSON.
+    """
+    doc = nlp(person)
+    person_ents = [ent for ent in doc.ents if ent.label_ == 'PERSON']
+    # If there are PERSON entities in the name itself, it's likely a real person
+    has_person = len(person_ents) > 0
+    
+    # Also check: if the string is all capitalized words or proper case, 
+    # and has at least 2 words, it's more likely a person name
+    words = person.split()
+    has_multiple_parts = len(words) >= 2
+    is_proper_case = all((w[0].isupper() or w.isnumeric()) for w in words if w)
+    
+    if has_person and has_multiple_parts:
+        return {'isPerson': True}
+    elif has_person and len(person.split()[0]) > 3:
+        # Single name > 3 chars with PERSON tag is probably a person
+        return {'isPerson': True}
+    else:
+        return {'isPerson': False}
 
 
 
@@ -121,8 +135,8 @@ if __name__ in "__main__":
         print(person)
         try:
             data = people_reader(person)
-            if type(data) == bool:
-                bio_data['isPerson'] = data
+            if data.get('isPerson', False):
+                bio_data['isPerson'] = data['isPerson']
                 dataRequestsPUT(team_id,quote_table, {'person': person}, { "$set": bio_data })
         except:
             pass
