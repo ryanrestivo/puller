@@ -90,8 +90,14 @@ def paginate_feed(initial_url):
     url = initial_url
     while url:
         headers = {'Authorization': token, 'Content-Type': 'application/json'}
-        q = requests.get(url, headers=headers)
-        q.raise_for_status()
+        q = requests.get(url, headers=headers, timeout=30)
+        try:
+            q.raise_for_status()
+        except requests.exceptions.HTTPError as http_err:
+            if q.status_code == 403:
+                print(f"API returned 403 Forbidden for {url}. Stopping pagination.")
+                break
+            raise
         data = q.json()
         yield data
         url = data.get('next')
