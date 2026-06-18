@@ -12,9 +12,10 @@ feed_str = os.getenv("MY_SECRET_JSON")  # Get the environment variable (as a str
 if feed_str:
     try:
         feed = json.loads(feed_str)  # Convert JSON string to dictionary
+        print(feed)
         token = feed['token']
         endpoint = feed['endpoint']
-        link = feed['link']
+        link = feed['link'] # https://timesfreepress.com/api/news/story/ # NEW LINK 
         validation = feed['validation']
         teamID = feed['teamID']
         database = feed['database']
