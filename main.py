@@ -9,7 +9,6 @@ if not service_api:
     raise ValueError("service_api not found in .env.  Ensure it's set correctly.")
 
 feed_str = os.getenv("NEW_SECRET_JSON")  # Get the environment variable (as a string)
-print(feed_str)
 if feed_str:
     try:
         feed = json.loads(feed_str)  # Convert JSON string to dictionary
