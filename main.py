@@ -12,7 +12,6 @@ feed_str = os.getenv("NEW_SECRET_JSON")  # Get the environment variable (as a st
 if feed_str:
     try:
         feed = json.loads(feed_str)  # Convert JSON string to dictionary
-        print(feed)
         token = feed['token']
         endpoint = feed['endpoint']
         link = feed['link']
@@ -90,6 +89,8 @@ def data_process(data, end_story_id):
 def paginate_feed(initial_url):
     url = initial_url
     while url:
+        if 'ellington' in url:
+           url = url.replace('ellington', 'www')
         headers = {'Authorization': token, 'Content-Type': 'application/json'}
         q = requests.get(url, headers=headers, timeout=30)
         try:
