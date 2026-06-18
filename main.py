@@ -8,14 +8,14 @@ service_api = os.getenv("BACKEND_API")
 if not service_api:
     raise ValueError("service_api not found in .env.  Ensure it's set correctly.")
 
-feed_str = os.getenv("MY_SECRET_JSON")  # Get the environment variable (as a string)
+feed_str = os.getenv("NEW_SECRET_JSON")  # Get the environment variable (as a string)
 if feed_str:
     try:
         feed = json.loads(feed_str)  # Convert JSON string to dictionary
         print(feed)
         token = feed['token']
         endpoint = feed['endpoint']
-        link = feed['link'] # https://timesfreepress.com/api/news/story/ # NEW LINK  
+        link = feed['link']
         validation = feed['validation']
         teamID = feed['teamID']
         database = feed['database']
