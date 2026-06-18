@@ -88,9 +88,10 @@ def data_process(data, end_story_id):
 
 def paginate_feed(initial_url):
     url = initial_url
+    cms_name = os.getenv('CMS_NAME')
     while url:
-        if 'ellington' in url:
-           url = url.replace('ellington', 'www')
+        if cms_name in url:
+           url = url.replace(cms_name, 'www')
         headers = {'Authorization': token, 'Content-Type': 'application/json'}
         q = requests.get(url, headers=headers, timeout=30)
         try:
