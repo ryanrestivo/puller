@@ -15,7 +15,7 @@ if feed_str:
         print(feed)
         token = feed['token']
         endpoint = feed['endpoint']
-        link = feed['link'] # https://timesfreepress.com/api/news/story/ # NEW LINK 
+        link = feed['link'] # https://timesfreepress.com/api/news/story/ # NEW LINK  
         validation = feed['validation']
         teamID = feed['teamID']
         database = feed['database']
