@@ -8,7 +8,7 @@ service_api = os.getenv("BACKEND_API")
 if not service_api:
     raise ValueError("service_api not found in .env.  Ensure it's set correctly.")
 
-feed_str = os.getenv("MY_SECRET_JSON")  # Get the environment variable (as a string)
+feed_str = os.getenv("NEW_SECRET_JSON")  # Get the environment variable (as a string)
 if feed_str:
     try:
         feed = json.loads(feed_str)  # Convert JSON string to dictionary
@@ -88,10 +88,19 @@ def data_process(data, end_story_id):
 
 def paginate_feed(initial_url):
     url = initial_url
+    cms_name = os.getenv('CMS_NAME')
     while url:
+        if cms_name in url:
+           url = url.replace(cms_name, 'www')
         headers = {'Authorization': token, 'Content-Type': 'application/json'}
-        q = requests.get(url, headers=headers)
-        q.raise_for_status()
+        q = requests.get(url, headers=headers, timeout=30)
+        try:
+            q.raise_for_status()
+        except requests.exceptions.HTTPError as http_err:
+            if q.status_code == 403:
+                print(f"API returned 403 Forbidden for {url}. Stopping pagination.")
+                break
+            raise
         data = q.json()
         yield data
         url = data.get('next')
