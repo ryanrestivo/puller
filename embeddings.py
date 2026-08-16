@@ -11,7 +11,6 @@ import re
 
 quote_dates = os.getenv('DATES_ENDPOINT')
 quote_table = os.getenv("QUOTE_TABLE")
-
 service_api = os.getenv("BACKEND_API")
 if not service_api:
     raise ValueError("service_api not found in .env.  Ensure it's set correctly.")

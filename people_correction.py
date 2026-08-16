@@ -188,7 +188,6 @@ def author_other_title_finder(team_id):
     else:
         pass
 
-
 def plural_people(team_id):
     pipeline = [
         {

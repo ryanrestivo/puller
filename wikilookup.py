@@ -68,7 +68,6 @@ def exact_match_data(page_id):
   data2['extract'] = ' '.join(text_data).strip()
   return data2 #data_dict
 
-
 def searching_person(search_term):
   #print(search_term)
   search_results = search_wikipedia(search_term)
