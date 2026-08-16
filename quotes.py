@@ -331,7 +331,6 @@ def extract_attributable_quotes(data_item, person_name, attribution_verbs):
                 "fullNameMentioned": person_explicit
             })
             seen_quotes.add(normalized_quote)
-
     return person_quotes
 
 def create_embeddings(nlp, text):

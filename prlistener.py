@@ -107,7 +107,6 @@ def past_story_run(team_id):
     past_story_ids = [i['site'] for i in data_identifiers]
     return past_story_ids
 
-
 if __name__ in "__main__":
     feed_string = os.getenv("NEWSROOM_VARIABLE") 
     if feed_string:

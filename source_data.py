@@ -9,8 +9,6 @@ import re
 import urllib.parse
 import random
 
-
-
 quote_table = os.getenv("QUOTE_TABLE")
 service_api = os.getenv("BACKEND_API")
 if not service_api:

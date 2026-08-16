@@ -82,8 +82,6 @@ def people_reader(person):
             llm_data = {}
   return llm_data
 
-
-
 if __name__ in "__main__":
     feed_string = os.getenv("NEWSROOM_VARIABLE") 
     if feed_string:

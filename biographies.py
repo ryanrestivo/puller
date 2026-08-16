@@ -75,7 +75,6 @@ def flex_llm_point(data):
 llm_data_endpoint = os.getenv('SHOT_ENDPOINT')
 llm_data_endpoint_secret = os.getenv('SHOT_ENDPOINT_SECRET')
 
-
 def shot_taker(data):
     data['process'] = llm_data_endpoint_secret
     r = requests.post(url=llm_data_endpoint, headers={"Validation": llm_key, 'Content-Type': 'application/json'}, json=data)

@@ -70,7 +70,6 @@ def links_author_get(link):
       return None
 
 ### THE CUSTOM SCRIPT TO BRING IN STORIES
-
 def post_driver(feed, past_stories):
   end_sequence = 0
   total_pages = 10000 // 100 + 1
