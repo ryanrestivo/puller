@@ -47,9 +47,11 @@ def inputDataRequests(database_name, collection_name, data):
 
 
 def paragraph_text(html_text):
-  soup = BeautifulSoup(html_text, "html.parser")
-  paragraphs = soup.find_all('p')
-  return ' '.join([p.text.strip() for p in paragraphs])
+    soup = BeautifulSoup(html_text, "html.parser")
+    for tag in soup.find_all(['div', 'figure', 'iframe', 'blockquote']):
+        tag.decompose()
+    paragraphs = soup.find_all('p')
+    return ' '.join(p.get_text() for p in paragraphs if p.get_text(strip=True))
 
 def story_checker(story_id, past_stories):
   if story_id in past_stories:
