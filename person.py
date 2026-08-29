@@ -6,14 +6,18 @@ import ast
 import re
 
 
-quote_dates = os.getenv('DATES_ENDPOINT')
 quote_table = os.getenv("QUOTE_TABLE")
 llm_service = os.getenv("LLM_SERVICE")
 llm_key = os.getenv('LLM_HEADER')
 
+# Delegate NER to the /nlp service — no local spacy needed.
+# The puller fetches data; the /nlp service handles NLP. This saves ~200MB
+# of model data and keeps the puller container lightweight.
+nlp_base_url = os.getenv("NLP_BASE_URL")
+
 service_api = os.getenv("BACKEND_API")
 if not service_api:
-    raise ValueError("service_api not found in .env.  Ensure it's set correctly.")
+    raise ValueError("service_api not found in .env. Ensure it's set correctly.")
 
 feed_str = os.getenv("MY_SECRET_JSON")  # Get the environment variable (as a string)
 if feed_str:
@@ -66,21 +70,93 @@ def shot_taker(data):
 
 
 def people_reader(person):
-  comparison_readout = shot_taker({'training': f'You are evaluating a string to determine the likelihood of it being a person or not. You are receiving a string determined by an NLP that it might be a person and providing conclusion to it.',
-                  'rule': f'All you need to do is return boolean True or False. If the text string is likely to be a person return True, if they are not return False. ONLY RETURN THE BOOLEAN TRUE or FALSE. ',
-                  'text': f'Here is the text string: {person}'})
-  try:
-    llm_data = ast.literal_eval(comparison_readout['choices'][-1]['message']['content'])
-  except Exception:
-    start_index = comparison_readout['choices'][-1]['message']['content'].find('{')
-    end_index = comparison_readout['choices'][-1]['message']['content'].rfind('}')
-    if start_index != -1 and end_index != -1:
-        json_string = comparison_readout['choices'][-1]['message']['content'][start_index:end_index + 1]
-        try:
-            llm_data = ast.literal_eval(json_string)
-        except Exception:
-            llm_data = {}
-  return llm_data
+    """Determine if a string is likely a person name by delegating NER to the /nlp service.
+
+    OLD behavior:
+        Loaded spacy.en_core_web_md locally and parsed doc.ents for PERSON type.
+        Used exact string matching against entity spans — only worked for 2-word names.
+
+    NEW behavior:
+        POSTs to /nlp base URL /personentities endpoint for NER person detection.
+        Uses last-word (surname) matching so 2, 3, 4+ word names are handled correctly.
+
+    Returns:
+        {'isPerson': bool}
+    """
+    # Normalize the input name for comparison (strip commas, extra spaces)
+    normalized = person.strip().replace(',', '')
+    # Extract surname — last word of the input — works for 2, 3, 4+ word names
+    input_surname = normalized.split()[-1].lower() if normalized.split() else ''
+
+    try:
+        # POST to /nlp service /personentities endpoint — returns only PERSON entities
+        url = f'{nlp_base_url}/personentities'
+        payload = {
+            'text': person,
+            'lang_model': 'en_core_web_md'
+        }
+        resp = requests.post(
+            url,
+            json=payload,
+            headers={'Validation': llm_key, 'Content-Type': 'application/json'},
+            timeout=5
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            # Expected format from /personentities: a list of strings (person names)
+            person_ents = data.get('person_ents', [])
+            if isinstance(data, dict):
+                person_ents = data.get('person_ents', [])
+
+            # Strategy 1 — exact full match (works when /nlp returns the full name)
+            for name in person_ents:
+                clean_name = name.strip().replace(',', '').replace('\\n', ' ')
+                if clean_name.lower() == normalized.lower():
+                    return {'isPerson': True}
+
+            # Strategy 2 — surname (last word) matching
+            # Handles cases like input="John Smith" matching entity="John Doe Smith"
+            # or entity="James Robert Smith" — as long as the last word matches
+            for name in person_ents:
+                clean_name = name.strip().replace(',', '').replace('\\n', ' ')
+                entity_surname = clean_name.split()[-1].lower() if clean_name.split() else ''
+                if entity_surname == input_surname and input_surname:
+                    return {'isPerson': True}
+
+            # Strategy 3 — reverse surname check
+            # Handles cases where the input surname is contained within a named entity
+            for name in person_ents:
+                clean_name = name.strip().replace(',', '').replace('\\n', ' ')
+                if input_surname in clean_name.lower() and len(input_surname) > 2:
+                    return {'isPerson': True}
+
+            # No match from NLP — fall through to heuristic fallback
+            words = person.split()
+            has_multiple_parts = len(words) >= 2
+            is_proper_case = all((w[0].isupper() or w.isnumeric()) for w in words if w)
+            if is_proper_case and has_multiple_parts:
+                # Single-word all-caps (likely ORG, not person) — e.g., 'IBM', 'NASA'
+                if person.isupper():
+                    return {'isPerson': False}
+                return {'isPerson': True}
+            return {'isPerson': False}
+        else:
+            # Service returned unexpected status — fall back to heuristics
+            words = person.split()
+            has_multiple_parts = len(words) >= 2
+            is_proper_case = all((w[0].isupper() or w.isnumeric()) for w in words if w)
+            if is_proper_case and has_multiple_parts and not person.isupper():
+                return {'isPerson': True}
+            return {'isPerson': False}
+    except Exception as e:
+        # If the /nlp service call fails entirely, use basic heuristics as last resort
+        words = person.split()
+        has_multiple_parts = len(words) >= 2
+        is_proper_case = all((w[0].isupper()) for w in words if w)
+        if is_proper_case and has_multiple_parts and not person.isupper():
+            return {'isPerson': True}
+        return {'isPerson': False}
+
 
 if __name__ in "__main__":
     feed_string = os.getenv("NEWSROOM_VARIABLE") 
@@ -119,8 +195,8 @@ if __name__ in "__main__":
         print(person)
         try:
             data = people_reader(person)
-            if type(data) == bool:
-                bio_data['isPerson'] = data
+            if data.get('isPerson', False):
+                bio_data['isPerson'] = data['isPerson']
                 dataRequestsPUT(team_id,quote_table, {'person': person}, { "$set": bio_data })
         except:
             pass
