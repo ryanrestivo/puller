@@ -78,6 +78,7 @@ llm_data_endpoint_secret = os.getenv('SHOT_ENDPOINT_SECRET')
 def shot_taker(data):
     data['process'] = llm_data_endpoint_secret
     r = requests.post(url=llm_data_endpoint, headers={"Validation": llm_key, 'Content-Type': 'application/json'}, json=data)
+    print(r.json())
     if r.status_code == 200:
         return_data = r.json()
         r.close()
@@ -297,7 +298,7 @@ def bio_creator(team_id, person):
     readout = shot_taker({'training': f'Base all of what you know about this source from the text. You must be certain when using this information. Create a python dict of items. Create a value "biography" as one long string that does not exceed 1500 characters, create a "role" and "organization" if applicable. Use all of the information given to write your best approximation on who {person} is from the quotes they have said. Be as specific on who they are from their quotes. Use from what they said and how they are mentioned to create a biography of them like this is a solid source to write the bio. DO NOT RETURN ANYTHING OTHER THAN THE DICT. If an item is repeated verbatim, assume that the text is duplicated.',
                                         'rule': f'Here is the mention of the text to use: ',
                                         'text': item_text})
-    #print(readout)
+    print(readout)
   except json.JSONDecodeError as e:
     raise ValueError(f"shot_taker returned invalid JSON with {e}")
   try: 
