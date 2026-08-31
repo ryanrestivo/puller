@@ -251,17 +251,6 @@ def bio_update_needed(team_id):
 
 
 def bio_creator(team_id, person):
-  ### TODO - debug today 2/2/26
-
-  # ! so we know the error is in here 
-
-  ### ERROR: Tony Vitello: Expecting value: line 1 column 1 (char 0)
-
-  ## LETS FIGURE OUT WHY LATER
-
-
-
-  ## GET THEIR BIO INFO FROM THEIR TEAM
   pipeline = [
         {"$match": {"person": person}},
         {"$unwind": "$mentions"},
