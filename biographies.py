@@ -310,6 +310,9 @@ def bio_creator(team_id, person):
       pass
   else:
       raise Exception
+  bio = llm_data.get('biography', '')
+  pattern = r'^\s*Based\s+strictly\s+on\s+the\s+provided\s+text,\s*'
+  llm_data['biography'] = re.sub(pattern, '', bio, flags=re.IGNORECASE)  
   llm_data['model'] = readout['model']
   llm_data['updatedDate'] = datetime.now().strftime('%Y-%m-%d')
   llm_data['total_data'] = item_total
