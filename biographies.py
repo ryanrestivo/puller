@@ -251,17 +251,6 @@ def bio_update_needed(team_id):
 
 
 def bio_creator(team_id, person):
-  ### TODO - debug today 2/2/26
-
-  # ! so we know the error is in here 
-
-  ### ERROR: Tony Vitello: Expecting value: line 1 column 1 (char 0)
-
-  ## LETS FIGURE OUT WHY LATER
-
-
-
-  ## GET THEIR BIO INFO FROM THEIR TEAM
   pipeline = [
         {"$match": {"person": person}},
         {"$unwind": "$mentions"},
@@ -297,7 +286,7 @@ def bio_creator(team_id, person):
     readout = shot_taker({'training': f'Base all of what you know about this source from the text. You must be certain when using this information. Create a python dict of items. Create a value "biography" as one long string that does not exceed 1500 characters, create a "role" and "organization" if applicable. Use all of the information given to write your best approximation on who {person} is from the quotes they have said. Be as specific on who they are from their quotes. Use from what they said and how they are mentioned to create a biography of them like this is a solid source to write the bio. DO NOT RETURN ANYTHING OTHER THAN THE DICT. If an item is repeated verbatim, assume that the text is duplicated.',
                                         'rule': f'Here is the mention of the text to use: ',
                                         'text': item_text})
-    #print(readout)
+    print(readout)
   except json.JSONDecodeError as e:
     raise ValueError(f"shot_taker returned invalid JSON with {e}")
   try: 
@@ -321,6 +310,9 @@ def bio_creator(team_id, person):
       pass
   else:
       raise Exception
+  bio = llm_data.get('biography', '')
+  pattern = r'^\s*Based\s+strictly\s+on\s+the\s+provided\s+text,\s*'
+  llm_data['biography'] = re.sub(pattern, '', bio, flags=re.IGNORECASE)  
   llm_data['model'] = readout['model']
   llm_data['updatedDate'] = datetime.now().strftime('%Y-%m-%d')
   llm_data['total_data'] = item_total
