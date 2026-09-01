@@ -312,7 +312,15 @@ def bio_creator(team_id, person):
       raise Exception
   bio = llm_data.get('biography', '')
   pattern = r'^\s*Based\s+strictly\s+on\s+the\s+provided\s+text,\s*'
-  llm_data['biography'] = re.sub(pattern, '', bio, flags=re.IGNORECASE)  
+  llm_data['biography'] = re.sub(pattern, '', bio, flags=re.IGNORECASE)
+  # Safer regex: Matches exact "none"/"n/a" OR "none/not/no [filler words]"
+  null_pattern = r'^\s*(none|n/a|not\s+specified|not\s+mentioned|(none|not|no)\s+(specified|mentioned|provided|given|listed|found|available)).*$'
+  org = llm_data.get('organization', '')
+  if re.match(null_pattern, org, flags=re.IGNORECASE):
+      llm_data['organization'] = ''
+  role = llm_data.get('role', '')
+  if re.match(null_pattern, role, flags=re.IGNORECASE):
+      llm_data['role'] = ''
   llm_data['model'] = readout['model']
   llm_data['updatedDate'] = datetime.now().strftime('%Y-%m-%d')
   llm_data['total_data'] = item_total
