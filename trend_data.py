@@ -34,11 +34,8 @@ def inputDataRequests(database_name, collection_name, data):
 
 HEADERS = {"User-Agent": "TrendMatchBot/5.7 (Authenticated Pipeline)"}
 
-# Bluesky Credentials for API Search Access
 BSKY_HANDLE = os.getenv("BLUESKY_HANDLE")
 BSKY_APP_PASSWORD = os.getenv("BLUESKY_PW")
-
-# API Endpoints
 BSKY_AUTH_URL = "https://bsky.social/xrpc/com.atproto.server.createSession"
 BSKY_API_URL = "https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed"
 BSKY_SEARCH_URL = "https://bsky.social/xrpc/app.bsky.feed.searchPosts"
