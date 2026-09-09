@@ -43,7 +43,6 @@ jobs:
           SPORTS_WIRE:  ${{ secrets.SPORTS_WIRE }}
           HANDLE_ONE:  ${{ secrets.HANDLE_ONE }}
           HANDLE_TWO:  ${{ secrets.HANDLE_TWO }}
-          BACKEND_API: ${{ secrets.BACKEND_API }}
           TREND_BACKEND: ${{ secrets.TREND_BACKEND }}
           TREND_BACKSET: ${{ secrets.TREND_BACKSET }}
         run: |
