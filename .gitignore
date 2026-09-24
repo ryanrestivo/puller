@@ -1,0 +1,105 @@
+# =====================================================================
+# puller — .gitignore  (public repo — treat this as a security boundary)
+# ---------------------------------------------------------------------
+# WHY THIS FILE EXISTS
+# This repo is PUBLIC. Credentials are (correctly) injected at runtime
+# via GitHub Actions `${{ secrets.* }}` -> `os.getenv(...)`. NOTHING here
+# should ever be a committed secret. This .gitignore is the safety net
+# that stops a local .env, a downloaded spacy model, a venv, or a key
+# file from being `git add .`-ed and leaked to the public internet.
+#
+# NOTE: We deliberately do NOT blanket-ignore "*.yaml"/"*.yml" because
+# this repo's ~40 GitHub Actions cron workflows ARE .yaml files and MUST
+# stay committed. We name the specific secret artifacts instead.
+# =====================================================================
+
+# ---- Secrets & credentials (the important part; do NOT remove) -------
+.env
+.env.*
+*.env
+.env.example   # keep an EMPTY example allowed? -> see note below
+secrets.*
+*secret*.json
+*secret*.yaml
+*secret*.yml
+*-secrets.yaml
+*-secrets.yml
+*credentials*.json
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.p8
+*.b64
+*.gpg
+*.keychain
+
+# (allow a committed, EMPTY example env so devs know which vars exist)
+!.env.example
+!.env.example.*
+
+# ---- Python build / cache ------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyi
+
+# ---- Virtual environments ------------------------------------------
+venv/
+.venv/
+env/
+env.bak/
+env.old/
+venv_*/
+pip-wheel/
+
+# ---- Jupyter / ML / spacy artifacts (large binary blobs) ------------
+# The runtime spacy model is pip-installed (spacy.load("en_core_web_md")),
+# so no local model dir is expected. IGNORE any local model blob that
+# someone downloads/creates so a multi-GB file never lands in a public repo.
+*.nlp
+*.spacy
+*.pkl
+*.pickle
+*.safetensors
+*.bin
+*.vec
+*.vecset
+models/
+spacy_models/
+.ipynb_checkpoints/
+
+# ---- Test / lint / type caches -------------------------------------
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ---- Build / packaging ---------------------------------------------
+build/
+dist/
+*.egg-info/
+wheels/
+
+# ---- OS / editor noise ---------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ---- Logs / scratch tmp --------------------------------------------
+*.log
+*.tmp
+*.temp
+tmp/
+scratch/
+
+# ---- JS tooling (in case a dev tool ever lands here) ---------------
+node_modules/
