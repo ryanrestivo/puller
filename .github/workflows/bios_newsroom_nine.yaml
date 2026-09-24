@@ -5,6 +5,9 @@ on:
   schedule:
     - cron: "12 22 * * *" 
 
+permissions:
+  contents: read
+
 jobs:
   importer:
     runs-on: ubuntu-latest

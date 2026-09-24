@@ -1,0 +1,88 @@
+# security-scanner.yaml — commit-time secret scanning for puller
+#
+# WHY THIS EXISTS (public-repo enforcement):
+# PR #69 added a .gitignore. A .gitignore is a NET, not a scanner — it stops
+# *known-patterned* filenames (.env, *.key, *.pem) from being `git add`'d.
+# It does NOT stop:
+#   - a pasted API key in an inline comment
+#   - a `.env.prod` variant not in the list
+#   - a `base64` blob in a `credentials.json`
+#   - a `mongodb+srv://user:pass@...` accidentally pasted into a test file
+#
+# gitleaks is the enforcement mechanism: it runs on EVERY push and on EVERY
+# pull request (including from forks) and FAILS the job if it detects a
+# pattern that looks like a secret. PRs that fail stay red — that is the
+# whole feature.
+#
+# Public-repo note on pull_request triggers:
+#   GitHub's built-in security boundary means fork-PRs get a scoped-down
+#   GITHUB_TOKEN (contents: read, no secrets access). This workflow only
+#   needs contents: read, so a fork-PR triggering it is SAFE. No secret
+#   value is ever read, printed, or exfiltrated by gitleaks on a
+#   restricted-run PR.
+#
+# Why gitleaks and not trufflehog:
+#   gitleaks ships a well-curated default ruleset (AWS keys, GitHub tokens,
+#   Mongo URIs, JWTs, private keys, etc.) and is the de facto standard for
+#   commit-time scanning in GitHub Actions. trufflehog is stronger for
+#   *verified* secrets (it actually probes against APIs), but requires
+#   credentials to run — not appropriate for a public repo fork-PR.
+#
+# Cost: roughly 10-30s per push against a repo this small. Scales linearly
+# with history size, and gitleaks has a `--no-banner` and parallel worker
+# count; we keep it simple here and let it run.
+#
+# Rotation caveat: if gitleaks reports a *pre-existing* secret in git history
+# (unlikely, but possible), the fix is rotate + scrub history; NOT "just
+# delete the line on this PR." This scanner does not rewrite history.
+
+name: security-scanner
+
+on:
+  # Every push to any branch on the repo itself. This is the "you can't
+  # `git push` a secret to a public repo without a red commit" guarantee.
+  push:
+  # Every pull request — including from forks. GitHub's fork-PR security
+  # boundary means fork runs get a scoped token (contents: read) and no
+  # secrets access. gitleaks needs neither.
+  pull_request:
+  # Manual run (e.g. to re-scan after a ruleset change).
+  workflow_dispatch:
+
+# Narrow the GITHUB_TOKEN to the minimum this job needs. This is the
+# public-repo defense: even if a malicious action in the future joins this
+# pipeline, it inherits only `contents: read`, not the full default
+# repo-scope write token.
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    name: gitleaks scan
+    runs-on: ubuntu-latest
+    # Cap the run: this repo is small, but if it ever grows to a history
+    # that takes >10 min, the timeout fires and the job fails closed.
+    timeout-minutes: 10
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v6
+        with:
+          # We need full history so a "secret rotated out in a later commit"
+          # still gets flagged at the head of HEAD. Shallow checkout = false
+          # negatives; leave at 0.
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          # The scanner uses a public GITHUB_TOKEN (contents: read) to
+          # interact with the API. It does NOT need secrets access.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # gitleaks config: use the default ruleset. The default ruleset
+          # covers AWS keys, GitHub tokens (ghp_, gho_, ghs_, ghu_, ghr_),
+          # private keys, Mongo URIs, JWTs, and ~150 more patterns.
+          GITLEAKS_ENABLE_SUMMARY: "true"
+          # Do NOT set GITLEAKS_ALLOWLIST / GITLEAKS_CONFIG to suppress —
+          # if a *real* pattern you need to allow shows up, add a scoped
+          # allowlist entry with a comment explaining why, and review
+          # before merge.

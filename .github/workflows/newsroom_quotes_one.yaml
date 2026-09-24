@@ -6,6 +6,9 @@ on:
     - cron: "31 11 * * *"
 
 
+permissions:
+  contents: read
+
 jobs:
   importer:
     runs-on: ubuntu-latest
