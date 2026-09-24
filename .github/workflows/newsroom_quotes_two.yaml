@@ -30,7 +30,7 @@ jobs:
       # Cache spaCy model directory
       - name: Cache spaCy model
         id: cache-spacy
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cache/spacy
           key: spacy-${{ runner.os }}-${{ hashFiles('spacy_model.txt') }}
