@@ -1,0 +1,26 @@
+# CODEOWNERS for puller
+#
+# Why this exists (public-repo review control):
+# On a public repo, anyone can open a PR, but CODEOWNERS lets you require
+# review from the named user before any path can be merged into main. If
+# you (or a future collaborator) forget to enforce review-required on main,
+# CODEOWNERS is the last line of defense: the repo-level "Require review
+# from Code Owners" toggle will hold any PR that touches owned paths.
+#
+# Scope: entire repo owned by @ryanrestivo. If you add collaborators, add
+# their handles here on top of (or in lieu of) the single-owner line.
+#
+# Note: for CODEOWNERS to have any effect, you must ALSO enable in
+# Settings → Branches → main:
+#   - "Require pull request reviews before merging"
+#   - "Require review from Code Owners"
+# I did not change that setting (I don't have write access to repo settings
+# from here). See PR body item (h).
+
+*   @ryanrestivo
+
+# Sensitive paths worth double-checking before merge (defense-in-depth even
+# with a single owner; becomes meaningful if you add a second collaborator):
+.github/workflows/   @ryanrestivo
+requirements.txt      @ryanrestivo
+nlp_requirements.txt  @ryanrestivo
