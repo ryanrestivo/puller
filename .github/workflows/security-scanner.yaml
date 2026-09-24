@@ -65,7 +65,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout full history
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           # We need full history so a "secret rotated out in a later commit"
           # still gets flagged at the head of HEAD. Shallow checkout = false
