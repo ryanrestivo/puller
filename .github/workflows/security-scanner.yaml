@@ -73,7 +73,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run gitleaks
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v3
         env:
           # The scanner uses a public GITHUB_TOKEN (contents: read) to
           # interact with the API. It does NOT need secrets access.
