@@ -1,0 +1,71 @@
+# =====================================================================
+# puller — .dockerignore  (DEFENSE-IN-DEPTH; INERT TODAY)
+# ---------------------------------------------------------------------
+# STATUS: This repo has NO Dockerfile and is NOT containerized. Its
+# ~40 jobs run as GitHub Actions cron steps, so a .dockerignore is a
+# NO-OP right now (there is no `docker build` to feed it).
+#
+# WHY IT EXISTS ANYWAY:
+# If puller ever grows a Dockerfile (e.g. `COPY . .`), this file is the
+# guard that keeps local secrets, venvs, git metadata, and multi-GB
+# spacy/model blobs OUT of the pushed image layer. Cheap to add now,
+# prevents a whole class of "oops we shipped .env in the image" leaks
+# later.
+#
+# NOTE: We do NOT blanket-ignore "*.yaml" so that if a future
+# image DOES need a config yaml, it can still be COPYed; the specific
+# secret-file patterns below cover the real risk.
+# =====================================================================
+
+# ---- version control -------------------------------------------------
+.git
+.gitignore
+.github
+
+# ---- secrets & credentials ------------------------------------------
+.env
+.env.*
+*.env
+secrets.*
+*secret*.json
+*secret*.yaml
+*secret*.yml
+*-secrets.yaml
+*-secrets.yml
+*credentials*.json
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.b64
+
+# ---- python build / cache -------------------------------------------
+__pycache__/
+*.py[cod]
+*.pyi
+venv/
+.venv/
+env/
+*.egg-info/
+build/
+dist/
+
+# ---- large ML / spacy blobs -----------------------------------------
+*.nlp
+*.spacy
+*.pkl
+*.pickle
+*.safetensors
+*.bin
+*.vec
+models/
+spacy_models/
+
+# ---- os / editor noise ----------------------------------------------
+.DS_Store
+.idea/
+.vscode/
+*.log
+*.tmp
+node_modules/
