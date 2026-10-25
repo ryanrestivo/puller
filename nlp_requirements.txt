@@ -1,5 +1,11 @@
 pandas
 spacy
+preshed<3.0.14   # pin: preshed 3.0.14 (built with Cython 3.1) breaks `spacy.load(...)` with
+                  #   OverflowError: Python int too large to convert to C ssize_t
+                  #   (Tokenizer._flush_specials). spacy 3.8 + preshed 3.0.13 works;
+                  #   3.0.14 does not. Regression reported 2026-10 in explosion/preshed#57;
+                  #   Presidio pins this the same way (data-privacy-stack/presidio#2403).
+                  #   Drop/raise this bound once preshed ships a fixed release.
 requests
 spacy-langdetect
 langdetect
