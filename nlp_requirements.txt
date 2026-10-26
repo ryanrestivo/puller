@@ -1,5 +1,23 @@
 pandas
 spacy
+preshed==3.0.13  # EXACT pin (not a range): preshed 3.0.14+ (built with Cython 3.1)
+                  #   breaks `spacy.load(...)` of any spaCy model with:
+                  #       OverflowError: Python int too large to convert to C ssize_t
+                  #   in spacy.tokenizer.Tokenizer._flush_specials.
+                  #   Cause: PreshMap integer-key handling for keys above 2**63
+                  #   (spaCy's tokenizer hashes are int64-range keys) after the
+                  #   Cython 3 rebuild in preshed 3.0.14.
+                  #   Fixed-in-upstream (still OPEN, unreleased): explosion/preshed#56
+                  #   (proposed fix). Regression report + 3.0.13/3.0.14 bisection:
+                  #   explosion/preshed#57. Confirmed working at 3.0.13 by
+                  #   jundot/omlx#4831 (exactly this OverflowError on spacy.load,
+                  #   fixed by pinning preshed==3.0.13) and independently by
+                  #   data-privacy-stack/presidio#2403.
+                  #   Revisit: once preshed#56 is merged AND released AND pip
+                  #   resolves to it, drop this line. Until then, 3.0.13 is the
+                  #   only version verified to load spaCy models. Do NOT widen to
+                  #   `>=3.0.13` or `<3.0.14` — 3.0.15 exists but is NOT verified
+                  #   to be fixed (it is part of the same Cython-3 rebuild line).
 requests
 spacy-langdetect
 langdetect
