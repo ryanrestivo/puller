@@ -10,35 +10,27 @@ permissions:
 
 jobs:
   spacy_job:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout the Repo
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
-      - name: Set up Python 3.9
-        uses: actions/setup-python@v7
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: "**/requirements.txt"
 
-      - name: Cache Python Packages
-        uses: actions/cache@v6
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Install Dependencies or take from Cache
+      - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests
-        env:
-          PIP_CACHE_DIR: ~/.cache/pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; else pip install requests; fi
 
       - name: Run Importer Script
         env:
           NEW_SECRET_JSON: ${{ secrets.NEW_SECRET_JSON }}
           BACKEND_API: ${{ secrets.BACKEND_API }}
-          CMS_NAME: $ {{ secrets.CMS_NAME }}
+          CMS_NAME: ${{ secrets.CMS_NAME }}
         run: python main.py
