@@ -405,11 +405,11 @@ def people_run_through(team_id, people_list, limit=None):
                 bio_data['biography'] = alt_bio # alt_bio becomes bio
             if bio_data['total_data'] > 1: # extreme threshold to start
                 # if you have a lot, assume you're famous
-                merged_bio = wiki_search(person, bio_data['biography'])
-                if merged_bio:
-                    bio_data['quotes_bio'] = bio_data['biography'] # stash the older version
+                #merged_bio = wiki_search(person, bio_data['biography'])
+                #if merged_bio:
+                #    bio_data['quotes_bio'] = bio_data['biography'] # stash the older version
                     # this bio supercedes now...
-                    bio_data['biography'] = merged_bio
+                #    bio_data['biography'] = merged_bio
             dataRequestsPUT(team_id,quote_table, {'person': person}, { "$set": bio_data })
             print(f"{person} updated {datetime.now()}")
         except Exception as e:
